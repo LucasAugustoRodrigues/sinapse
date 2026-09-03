@@ -1,0 +1,44 @@
+# manifest.yaml — mapa de pares prova<->gabarito + metadados.
+# Os PDFs ficam em data/raw/ (fora do Git). Foco: 45 primeiras questoes (Linguagens).
+# Reorganizacao pendente: mover Docs/PDFs -> data/raw/ antes de rodar a fabrica.
+
+fonte: SAS
+area: Linguagens
+foco_questoes: [1, 45]
+
+pares:
+  - id: SAS2024-S1
+    ano: 2024
+    numero: 1
+    prova: data/raw/simulados/2024SASENEM1DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM1DIA1M1gabarito.pdf
+  - id: SAS2024-S2
+    ano: 2024
+    numero: 2
+    prova: data/raw/simulados/2024SASENEM2DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM2DIA1M1gabarito.pdf
+  - id: SAS2024-S3
+    ano: 2024
+    numero: 3
+    prova: data/raw/simulados/2024SASENEM3DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM3DIA1M1gabarito.pdf
+  - id: SAS2024-S4
+    ano: 2024
+    numero: 4
+    prova: data/raw/simulados/2024SASENEM4DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM4DIA1M1gabarito.pdf
+  - id: SAS2024-S5
+    ano: 2024
+    numero: 5
+    prova: data/raw/simulados/2024SASENEM5DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM5DIA1M1gabarito.pdf
+  - id: SAS2024-S6
+    ano: 2024
+    numero: 6
+    prova: data/raw/simulados/2024SASENEM6DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2024SASENEM6DIA1M1gabarito.pdf
+  - id: SAS2026-S1
+    ano: 2026
+    numero: 1
+    prova: "data/raw/simulados/1º_SIMULADO_SAS_ENEM_2026 _D1_AZUL_prova.pdf"
+    gabarito: "data/raw/gabaritos/[RESOLUÇÃO]_1º_Simulado_SAS_ENEM_1º_Dia_M1_26-03-2026_07h59min_gabarito.pdf"

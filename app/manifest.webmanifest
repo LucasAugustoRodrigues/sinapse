@@ -1,0 +1,11 @@
+{
+  "name": "Sinapse",
+  "short_name": "Sinapse",
+  "description": "Banco de questoes do ENEM — reconhecer a habilidade e fixar por repeticao espacada.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b0c16",
+  "theme_color": "#0b0c16",
+  "icons": []
+}

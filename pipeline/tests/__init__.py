@@ -1,0 +1,1 @@
+# Testes da fabrica (pytest).

@@ -1,0 +1,185 @@
+{
+  "area": "Linguagens e Códigos",
+  "titulo": "Matriz de Referência — Competências e Habilidades",
+  "origem": "Digitada por ela (com apoio de IA) e conferida manualmente.",
+  "correcoes": [
+    "H2: 'geralmente focais' corrigido para 'geralmente fáceis' conforme observação dela."
+  ],
+  "total_habilidades": 30,
+  "competencias": [
+    {
+      "numero": 1,
+      "nome": "Gêneros Textuais e Prática Social",
+      "habilidades": [
+        {
+          "numero": 1,
+          "descricao": "Identificar recursos expressivos e características textuais do gênero."
+        },
+        {
+          "numero": 2,
+          "descricao": "Resolver problemas sociais (geralmente fáceis)."
+        },
+        {
+          "numero": 3,
+          "descricao": "Relacionar informações do texto, função social do gênero e como opera socialmente."
+        },
+        {
+          "numero": 4,
+          "descricao": "Reconhecer posições críticas aos usos sociais da linguagem."
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "nome": "Língua Estrangeira",
+      "habilidades": [
+        {
+          "numero": 5,
+          "descricao": "Associar vocábulos e expressões ao seu contexto."
+        },
+        {
+          "numero": 6,
+          "descricao": "Utilizar conhecimento sobre cultura e tecnologia."
+        },
+        {
+          "numero": 7,
+          "descricao": "Relacionar função social."
+        },
+        {
+          "numero": 8,
+          "descricao": "Reconhecer a diversidade linguística e cultural."
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "nome": "Linguagem Corporal",
+      "habilidades": [
+        {
+          "numero": 9,
+          "descricao": "Reconhecer manifestações corporais associadas ao cotidiano."
+        },
+        {
+          "numero": 10,
+          "descricao": "Reconhecer a necessidade de transformar hábitos corporais / padrões de beleza."
+        },
+        {
+          "numero": 11,
+          "descricao": "Reconhecer a linguagem corporal para interação e adaptação social."
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "nome": "Artes",
+      "habilidades": [
+        {
+          "numero": 12,
+          "descricao": "Reconhecer funções da arte (geralmente em imagens)."
+        },
+        {
+          "numero": 13,
+          "descricao": "Analisar produções artísticas, padrões de beleza e preconceitos."
+        },
+        {
+          "numero": 14,
+          "descricao": "Reconhecer a interrelação de elementos e o valor da diversidade artística."
+        }
+      ]
+    },
+    {
+      "numero": 5,
+      "nome": "Literatura",
+      "habilidades": [
+        {
+          "numero": 15,
+          "descricao": "Estabelecer relações entre o texto literário e o contexto de produção."
+        },
+        {
+          "numero": 16,
+          "descricao": "Relacionar concepções artísticas aos procedimentos de construção do texto."
+        },
+        {
+          "numero": 17,
+          "descricao": "Reconhecer a presença de valores sociais e humanos."
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "nome": "Sistemas Simbólicos",
+      "habilidades": [
+        {
+          "numero": 18,
+          "descricao": "Identificar elementos de progressão temática e organização estrutural."
+        },
+        {
+          "numero": 19,
+          "descricao": "Analisar a função da linguagem."
+        },
+        {
+          "numero": 20,
+          "descricao": "Reconhecer patrimônio linguístico para memória nacional."
+        }
+      ]
+    },
+    {
+      "numero": 7,
+      "nome": "Argumentação e Opinião",
+      "habilidades": [
+        {
+          "numero": 21,
+          "descricao": "Reconhecer recursos verbais e não verbais."
+        },
+        {
+          "numero": 22,
+          "descricao": "Relacionar dois ou mais textos."
+        },
+        {
+          "numero": 23,
+          "descricao": "Inferir os objetivos do autor através de marcas linguísticas."
+        },
+        {
+          "numero": 24,
+          "descricao": "Reconhecer as estratégias argumentativas."
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "nome": "Variantes Linguísticas e Norma-padrão",
+      "habilidades": [
+        {
+          "numero": 25,
+          "descricao": "Identificar marcas linguísticas que singularizam variedades."
+        },
+        {
+          "numero": 26,
+          "descricao": "Relacionar variantes a situações de uso."
+        },
+        {
+          "numero": 27,
+          "descricao": "Reconhecer os usos da norma-padrão."
+        }
+      ]
+    },
+    {
+      "numero": 9,
+      "nome": "Tecnologias da Informação e Comunicação",
+      "habilidades": [
+        {
+          "numero": 28,
+          "descricao": "Reconhecer a função e o impacto das novas tecnologias."
+        },
+        {
+          "numero": 29,
+          "descricao": "Identificar as características da tecnologia."
+        },
+        {
+          "numero": 30,
+          "descricao": "Relacionar o desenvolvimento da sociedade ao uso das tecnologias."
+        }
+      ]
+    }
+  ]
+}

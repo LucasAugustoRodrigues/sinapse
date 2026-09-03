@@ -1,0 +1,28 @@
+# Dados reais / material bruto (nunca no repo)
+data/raw/
+data/processed/
+Docs/
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# Skills externas vendorizadas (ferramenta, não o projeto)
+.agents/
+.claude/skills/*
+!.claude/skills/sinapse/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

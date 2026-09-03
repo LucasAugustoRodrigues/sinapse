@@ -1,0 +1,15 @@
+:root{
+  /* Identidade "noite neural" do Sinapse */
+  --bg:#0b0c16; --bg2:#10121f; --panel:#161a2c; --panel2:#1e2238;
+  --line:#2a2f4d; --ink:#edecff; --muted:#a6a3cd;
+  --synapse:#8b7bf5;  /* roxo, acento principal */
+  --signal:#3fc7f4;   /* ciano, sinal secundario */
+  --ok:#34d399; --err:#fb7185; --warn:#fbbf5c;
+  --radius:16px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.55}
+/* TODO(sonnet): estilos das telas (ver mockup do card e PLANEJAMENTO.md §5). */

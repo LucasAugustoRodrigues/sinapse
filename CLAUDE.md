@@ -34,6 +34,7 @@ Convenções que **toda sessão do Claude Code deve seguir** neste projeto. Cont
 - Não entregar código sem os testes que o cobrem.
 
 ## Git
+- **Você (Claude Code) NUNCA faz commit, `git add`, `git push` nem cria branch.** Só edita arquivos e roda testes; quem commita é o Lucas, depois de revisar. Ao terminar, mostre só o resumo do que mudou e o resultado dos testes (`git diff` somente leitura é ok).
 - Commits **pequenos e descritivos**, em português. Uma fatia revisável por vez.
 - Nunca commitar: PDFs brutos, dataset real de produção, `data/raw/`, `__pycache__/`, `node_modules/`.
 

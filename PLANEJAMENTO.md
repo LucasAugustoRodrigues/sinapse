@@ -471,6 +471,12 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
 - **Esqueleto do projeto criado (03/09)** — estrutura `pipeline/` + `app/`, `README`,
   `CLAUDE.md`, `.gitignore`, `manifest.yaml` (os 7 pares) e stubs com a responsabilidade de
   cada módulo. `git init` feito; o **1º commit fica pra você** (autoria sua, é portfólio).
+- **Repo no GitHub + 1º commit (04/09)** — `sinapse` público no ar em
+  github.com/LucasAugustoRodrigues/sinapse (esqueleto commitado e enviado).
+- **PDFs movidos** — de `Docs/PDFs/` para `data/raw/{simulados,gabaritos}/` (7 provas + 7
+  gabaritos; ficam locais, fora do Git).
+- **Skills instaladas e funcionando (§10)** — `pdf`, `frontend-design` e `webapp-testing`
+  no Claude Code (copiadas pra `.claude/skills/`, todas "on").
 - **Regra do motor SRS (acerto × confiança)** — mapa fechado (§5); confiança medida
   antes da revelação, nota Anki derivada, "erro confiante" sinalizado.
 - **Matriz das 30 habilidades** — recebida dela, conferida (H2 corrigido de "focais" →
@@ -483,8 +489,7 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, agora com o board.
-- **Setup de skills (§10)** — decidido o conjunto; Lucas instalando `pdf` /
-  `frontend-design` / `webapp-testing` no Claude Code.
+- **Construir a fábrica** — começando agora pelo 1º prompt (modelos Pydantic).
 
 ### 📋 A fazer
 
@@ -492,10 +497,8 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       (fixtures dos casos-âncora de §7.9). → prompt pro Sonnet depois do esqueleto.
 - [ ] **(Opcional) Mockup navegável das 6 telas** — bom pro portfólio e pra sentir o app
       antes do código.
-- [ ] **Reorganizar os PDFs** — mover `Docs/PDFs/*` → `data/raw/` (as pastas já existem;
-      falta mover os arquivos antes de rodar a fábrica).
-- [ ] **1º commit** (autoria do Lucas) + **criar o repo no GitHub** + push.
 - [ ] **Construir a fábrica (pipeline Python)** → gerar o `questoes.json` real.
+      **← EM FOCO:** 1º prompt = modelos Pydantic (`modelos.py`) + testes; depois o parser SAS.
 - [ ] **Construir o app PWA** (dados → domínio → UI; offline; instalável).
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
 - [ ] **(Opcional) Saudação personalizada** com o nome dela.

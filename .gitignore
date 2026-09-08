@@ -18,8 +18,7 @@ dist/
 
 # Skills externas vendorizadas (ferramenta, não o projeto)
 .agents/
-.claude/skills/*
-!.claude/skills/sinapse/
+.claude/
 
 # Sistema / editor
 .DS_Store

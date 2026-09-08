@@ -11,6 +11,8 @@ import sys
 from dataclasses import dataclass
 from typing import Literal, Optional
 
+from nucleo.modelos import Alternativa, Questao
+
 
 # ============================================================================
 # Estruturas de dados — Gabarito
@@ -441,6 +443,119 @@ def _ler_texto_prova(caminho: str) -> str:
             dir_ = p.crop((w / 2, 0, w, h)).extract_text() or ""
             paginas.append(esq + "\n" + dir_)
     return "\n".join(paginas)
+
+
+# ============================================================================
+# Função pura — montar_questoes (merge prova + gabarito -> list[Questao])
+# ============================================================================
+
+def montar_questoes(
+    provas: list[QuestaoProva],
+    gabaritos: list[RespostaGabarito],
+    id_base: str,
+    fonte: str,
+    simulado: int,
+) -> list[Questao]:
+    """
+    Casa QuestaoProva e RespostaGabarito pela chave (numero, idioma) e devolve
+    a lista de Questao Pydantic na ordem das provas.
+
+    Função pura — sem IO.
+    """
+    _SUFIXO_IDIOMA: dict[Optional[str], str] = {
+        "ingles": "-EN",
+        "espanhol": "-ES",
+        None: "",
+    }
+
+    indice_gab: dict[tuple[int, Optional[str]], RespostaGabarito] = {
+        (g.numero, g.idioma): g for g in gabaritos
+    }
+
+    # Verifica se há gabaritos sem prova correspondente
+    chaves_prova: set[tuple[int, Optional[str]]] = {(p.numero, p.idioma) for p in provas}
+    for chave in indice_gab:
+        if chave not in chaves_prova:
+            raise ValueError(
+                f"Gabarito sem prova correspondente: numero={chave[0]}, idioma={chave[1]}"
+            )
+
+    questoes: list[Questao] = []
+    for prova in provas:
+        chave = (prova.numero, prova.idioma)
+        if chave not in indice_gab:
+            raise ValueError(
+                f"Prova sem gabarito correspondente: numero={prova.numero}, idioma={prova.idioma}"
+            )
+        gab = indice_gab[chave]
+
+        sufixo = _SUFIXO_IDIOMA[prova.idioma]
+        id_questao = f"{id_base}-Q{prova.numero:02d}{sufixo}"
+
+        # Monta alternativas combinando texto (prova) + correta/comentario (gabarito)
+        if len(prova.alternativas) != len(gab.alternativas):
+            raise ValueError(
+                f"Questão {prova.numero} (idioma={prova.idioma}): "
+                f"prova tem {len(prova.alternativas)} alternativas, "
+                f"gabarito tem {len(gab.alternativas)}."
+            )
+
+        alternativas: list[Alternativa] = []
+        for alt_prova, alt_gab in zip(prova.alternativas, gab.alternativas):
+            if alt_prova.letra != alt_gab.letra:
+                raise ValueError(
+                    f"Questão {prova.numero}: letra da prova '{alt_prova.letra}' "
+                    f"difere da letra do gabarito '{alt_gab.letra}'."
+                )
+            alternativas.append(Alternativa(
+                letra=alt_prova.letra,
+                texto=alt_prova.texto,
+                correta=alt_gab.correta,
+                comentario=alt_gab.comentario,
+            ))
+
+        questoes.append(Questao(
+            id=id_questao,
+            fonte=fonte,
+            simulado=simulado,
+            numero=prova.numero,
+            area="Linguagens",
+            idioma=prova.idioma,
+            enunciado=prova.enunciado,
+            imagens=[],
+            alternativas=alternativas,
+            gabarito=gab.gabarito,
+            competencia=gab.competencia,
+            habilidade=gab.habilidade,
+            confianca_extracao="alta",
+        ))
+
+    return questoes
+
+
+# ============================================================================
+# Entry-point do adaptador (IO nas bordas)
+# ============================================================================
+
+def extrair(par: dict) -> list[Questao]:
+    """
+    Lê os PDFs de prova e gabarito do par, parseia e monta as Questao finais.
+    Interface do padrão Adapter: nova fonte = novo arquivo, sem tocar aqui.
+    """
+    texto_prova    = _ler_texto_prova(par["prova"])
+    texto_gabarito = _ler_texto_pdf(par["gabarito"])
+
+    provas    = parsear_prova(texto_prova)
+    gabaritos = parsear_gabarito(texto_gabarito)
+
+    ano = par.get("ano", "")
+    return montar_questoes(
+        provas,
+        gabaritos,
+        id_base=par["id"],
+        fonte=f"SAS{ano}",
+        simulado=par["numero"],
+    )
 
 
 # ============================================================================

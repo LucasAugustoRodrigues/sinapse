@@ -57,9 +57,9 @@ class QuestaoProva:
 # Regexes compartilhadas (gabarito e prova)
 # ============================================================================
 
-# Marcadores de seção de idioma
-_RE_INGLES   = re.compile(r"Questões de 01 a 05\s*\(opção inglês\)",   re.IGNORECASE)
-_RE_ESPANHOL = re.compile(r"Questões de 01 a 05\s*\(opção espanhol\)", re.IGNORECASE)
+# Marcadores de seção de idioma — toleram ":" opcional: "(opção inglês)" e "(opção: inglês)"
+_RE_INGLES   = re.compile(r"Quest[õo]es de 01 a 05\s*\(\s*opção\s*:?\s*inglês\s*\)",   re.IGNORECASE)
+_RE_ESPANHOL = re.compile(r"Quest[õo]es de 01 a 05\s*\(\s*opção\s*:?\s*espanhol\s*\)", re.IGNORECASE)
 
 # Início da seção de Linguagens (linha isolada, sem barra e sem "/ Ciências")
 _RE_INICIO_LINGUAGENS = re.compile(

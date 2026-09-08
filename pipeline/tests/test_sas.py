@@ -195,6 +195,41 @@ def test_prova_q2_sem_idioma():
     assert q.idioma is None
 
 
+def test_gabarito_marcador_com_dois_pontos():
+    """'(opção: inglês)' (com dois-pontos) deve ser reconhecido como idioma='ingles'."""
+    fixture = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS
+Questões de 01 a 45
+Questões de 01 a 05 (opção: inglês)
+01. Resposta correta: A C 2 H 5
+a) (V) Comentário a.
+b) (F) Comentário b.
+c) (F) Comentário c.
+d) (F) Comentário d.
+e) (F) Comentário e.
+"""
+    qs = parsear_gabarito(fixture)
+    assert qs[0].idioma == "ingles"
+
+
+def test_prova_marcador_com_dois_pontos():
+    """'(opção: inglês)' (com dois-pontos) deve ser reconhecido como idioma='ingles'."""
+    fixture = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS
+Questões de 01 a 45
+Questões de 01 a 05 (opção: inglês)
+QUESTÃO 01
+Enunciado de teste.
+AA alternativa a.
+BB alternativa b.
+CC alternativa c.
+DD alternativa d.
+EE alternativa e.
+"""
+    qs = parsear_prova(fixture)
+    assert qs[0].idioma == "ingles"
+
+
 def test_prova_4_alternativas_levanta_erro():
     """Questão com apenas 4 alternativas deve levantar ValueError."""
     texto_invalido = """\

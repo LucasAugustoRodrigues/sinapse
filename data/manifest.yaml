@@ -40,5 +40,5 @@ pares:
   - id: SAS2026-S1
     ano: 2026
     numero: 1
-    prova: "data/raw/simulados/1º_SIMULADO_SAS_ENEM_2026 _D1_AZUL_prova.pdf"
-    gabarito: "data/raw/gabaritos/[RESOLUÇÃO]_1º_Simulado_SAS_ENEM_1º_Dia_M1_26-03-2026_07h59min_gabarito.pdf"
+    prova: data/raw/simulados/2026SASENEM1DIA1M1prova.pdf
+    gabarito: data/raw/gabaritos/2026SASENEM1DIA1M1gabarito.pdf

@@ -485,23 +485,43 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
 - **Motor SRS — matemática fechada (§7)** — SM-2 adaptado; card = (questão × modo); notas
   por acerto × confiança; contas de ease/intervalo; lapso normal × confiante; fila do dia;
   força/domínio por habilidade; knobs ajustáveis; casos de teste. Pronto pra virar `srs.js`.
+- **FÁBRICA COMPLETA — 7/7 pares, 350 questões (11/09)** — pipeline Python ponta a ponta:
+  - **Modelos Pydantic** (`modelos.py`): `Questao`/`Alternativa` com validações (5 alts A–E,
+    exatamente 1 correta, gabarito == correta, habilidade 1–30, competência 1–9, idioma
+    obrigatório/exclusivo nas 1–5). ~17 testes.
+  - **Parser da prova** (`adaptadores/sas.py`): recorte de colunas (de-entrelaçamento),
+    dehifenização, seção de Linguagens 1–45, idioma inglês/espanhol nas 1–5, alternativas
+    **dobradas** (2024: "AA") **e únicas** (2026: "A"), marca d'água "SAS ENEM" 2026.
+  - **Parser do gabarito** (`adaptadores/sas.py`): cabeçalho de seção (isolado 2024 **e**
+    grudado "– Questões de 01 a 45" 2026), cabeçalho de questão ("Resposta correta:" **e**
+    "Gabarito:"), alternativas "(V)/(F)" (2024) **e** "CORRETA./INCORRETA." (2026), rodapé.
+  - **Imagens** (`nucleo/imagens.py`): extração e associação de figuras (tirinhas, charges,
+    gráficos, artes) à questão certa, por proximidade de coluna/página; render PNG 150 dpi.
+  - **Merge + orquestrador** (`nucleo/`, `extrair.py`): casa prova↔gabarito → `Questao` final;
+    escreve `data/processed/questoes.json`.
+  - **Resultado:** 7/7 pares OK, **350 questões** (35 inglês + 35 espanhol + 280 sem idioma),
+    **75 com imagem**, **55 testes verdes**. (Caso 2026: descoberto que o *gabarito* mudou de
+    formato — não era bug de Windows, era o parser do gabarito.)
 
 ### 🔨 Em andamento
 
-- **Documento vivo + quadro de andamento** — este arquivo, agora com o board.
-- **Construir a fábrica** — começando agora pelo 1º prompt (modelos Pydantic).
+- **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
 
 ### 📋 A fazer
 
+- [ ] **Limpar vazamento de rodapé/marca d'água no TEXTO da última alternativa (E)** —
+      pré-existente; atinge ~20 questões (12 em 2024, 8 em 2026), sempre a alt E, onde um
+      rodapé cai logo após o texto. Fix: adicionar strip de rodapé/marca d'água no Passo 1
+      do `parsear_prova`, como o gabarito já faz. **← próxima tarefa da fábrica.**
+- [ ] **`validar.py` + `revisao.md`** — detector de palavra colada (ex.: "aesperança",
+      "soremust", artefato do pdfplumber no Windows) e marcação `confianca_extracao="revisar"`;
+      relatório do que precisa de olho humano.
 - [ ] **Implementar o `srs.js`** (funções puras) conforme §7, com testes de regressão
-      (fixtures dos casos-âncora de §7.9). → prompt pro Sonnet depois do esqueleto.
-- [ ] **(Opcional) Mockup navegável das 6 telas** — bom pro portfólio e pra sentir o app
-      antes do código.
-- [ ] **Construir a fábrica (pipeline Python)** → gerar o `questoes.json` real.
-      **← EM FOCO:** 1º prompt = modelos Pydantic (`modelos.py`) + testes; depois o parser SAS.
-- [ ] **Construir o app PWA** (dados → domínio → UI; offline; instalável).
+      (fixtures dos casos-âncora de §7.9).
+- [ ] **Construir o app PWA** (dados → domínio → UI; offline; instalável): `dados.js`,
+      `srs.js`, `estudo.js`, `ui.js`, service worker, as 6 telas, mapa do cérebro.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
-- [ ] **(Opcional) Saudação personalizada** com o nome dela.
+- [ ] **(Opcional)** mockup navegável das telas; saudação personalizada com o nome dela.
 
 ---
 

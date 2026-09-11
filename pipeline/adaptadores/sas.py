@@ -61,9 +61,11 @@ class QuestaoProva:
 _RE_INGLES   = re.compile(r"Quest[õo]es de 01 a 05\s*\(\s*opção\s*:?\s*inglês\s*\)",   re.IGNORECASE)
 _RE_ESPANHOL = re.compile(r"Quest[õo]es de 01 a 05\s*\(\s*opção\s*:?\s*espanhol\s*\)", re.IGNORECASE)
 
-# Início da seção de Linguagens (linha isolada, sem barra e sem "/ Ciências")
+# Início da seção de Linguagens — aceita sufixo "– Questões de 01 a 45" (2026 gabarito)
 _RE_INICIO_LINGUAGENS = re.compile(
-    r"^LINGUAGENS,\s+CÓDIGOS\s+E\s+SUAS\s+TECNOLOGIAS\s*$", re.IGNORECASE
+    r"^LINGUAGENS,\s+CÓDIGOS\s+E\s+SUAS\s+TECNOLOGIAS"
+    r"(?:\s*[–\-—]\s*Quest[õo]es\s+de\s+01\s+a\s+45)?\s*$",
+    re.IGNORECASE,
 )
 
 
@@ -77,21 +79,25 @@ _RE_CABECALHO_PAG = re.compile(
     re.IGNORECASE,
 )
 
-# Rodapé: "LINGUAGENS, CÓDIGOS ... / CIÊNCIAS HUMANAS ..."
+# Rodapé: "LINGUAGENS[,. ]CÓDIGOS ... / CIÊNCIAS HUMANAS ..." (2026 sem vírgula)
 _RE_RODAPE = re.compile(
-    r"LINGUAGENS[,.].*CIÊNCIAS\s+HUMANAS",
+    r"LINGUAGENS[,.\s]+CÓDIGOS.*CIÊNCIAS\s+HUMANAS",
     re.IGNORECASE,
 )
 
-# Cabeçalho de questão do gabarito: "01. Resposta correta: A C 2 H 5"
+# Cabeçalho de questão do gabarito: "01. Resposta correta: A C 2 H 5" (2024)
+#                                 ou "01. Gabarito: C C 2 H 6"          (2026)
 _RE_CABECALHO_QUESTAO_GAB = re.compile(
-    r"^(\d{1,2})\.\s+Resposta correta:\s+([A-E])\s+C\s+(\d+)\s+H\s+(\d+)\s*$"
+    r"^(\d{1,2})\.\s+(?:Resposta correta|Gabarito):\s+([A-E])\s+C\s+(\d+)\s+H\s+(\d+)\s*$"
 )
 
-# Alternativa do gabarito: "a) (V) texto..." ou "a) (F) texto..."
+# Alternativa do gabarito: "a) (V)/(F) texto..." (2024) ou "a) CORRETA./INCORRETA. texto..." (2026)
 _RE_ALTERNATIVA_GAB = re.compile(
-    r"^([a-e])\)\s+\((V|F)\)\s*(.*)"
+    r"^([a-e])\)\s+(?:\((V|F)\)|(INCORRETA|CORRETA)\.?)\s*(.*)"
 )
+
+# Cabeçalho de continuação de seção (2026): "LINGUAGENS ... – Questões de 06 a 45"
+_RE_CONTINUACAO_GAB = re.compile(r"^LINGUAGENS.*Quest[õo]es de 06 a 45", re.IGNORECASE)
 
 # Fim do escopo do gabarito
 _RE_FIM_GABARITO = re.compile(r"Questões de 46 a 90")
@@ -103,6 +109,9 @@ _RE_FIM_GABARITO = re.compile(r"Questões de 46 a 90")
 
 # Marca d'água de lixo: linha que (sem espaços) casa com (?:LUZA|MENE|4202)+
 _RE_LIXO_PROVA = re.compile(r"^(?:LUZA|MENE|4202)+$", re.IGNORECASE)
+
+# Marca d'água 2026: linha com "SAS ENEM" duas ou mais vezes
+_RE_LIXO_2026 = re.compile(r"SAS ENEM.*SAS ENEM", re.IGNORECASE)
 
 # Copyright
 _RE_COPYRIGHT = re.compile(r"Copyright\s*©", re.IGNORECASE)
@@ -119,8 +128,8 @@ _RE_LC_LINHA = re.compile(r"^\d+\s+LC\b")
 # Marcador de questão da prova: "QUESTÃO 01"
 _RE_QUESTAO_PROVA = re.compile(r"^QUEST[ÃA]O\s+(\d{1,2})\s*$")
 
-# Alternativa da prova: "AA texto..." (letra dobrada)
-_RE_ALT_PROVA = re.compile(r"^([A-E])\1\s+(.*)")
+# Alternativa da prova: "AA texto..." (dobrada, 2024) ou "A texto..." (única, 2026)
+_RE_ALT_PROVA = re.compile(r"^([A-E])\1?(?=\s)(.*)")
 
 # Fim do escopo da prova
 _RE_FIM_PROVA = re.compile(r"Proposta de Redação|Questões de 46 a 90")
@@ -152,6 +161,35 @@ def _localizar_inicio_linguagens(linhas: list[str]) -> list[str]:
     raise ValueError("Seção 'LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS' não encontrada no texto.")
 
 
+def _encontrar_bloco_alternativas(linhas: list[str]) -> Optional[list[int]]:
+    """
+    Localiza a ÚLTIMA sequência A,B,C,D,E de marcadores de alternativa nas linhas.
+    Retorna lista de 5 índices [i_A, i_B, i_C, i_D, i_E] ou None se não houver.
+    Funciona com marcador dobrado (2024: AA) e simples (2026: A).
+    Tomando a última sequência, comandos que começam com "A " ficam no enunciado.
+    """
+    marcadores: list[tuple[int, str]] = []
+    for i, linha in enumerate(linhas):
+        m = _RE_ALT_PROVA.match(linha)
+        if m:
+            marcadores.append((i, m.group(1)))
+
+    alvo = list("ABCDE")
+    posicoes: list[Optional[int]] = [None] * 5
+
+    # Busca gulosa da direita: último E, depois último D antes dele, etc.
+    idx = len(marcadores) - 1
+    for k in range(4, -1, -1):
+        while idx >= 0 and marcadores[idx][1] != alvo[k]:
+            idx -= 1
+        if idx < 0:
+            return None
+        posicoes[k] = marcadores[idx][0]
+        idx -= 1
+
+    return posicoes  # type: ignore[return-value]
+
+
 # ============================================================================
 # Função pura — parsear_gabarito
 # ============================================================================
@@ -165,8 +203,13 @@ def parsear_gabarito(texto: str) -> list[RespostaGabarito]:
     """
     linhas = texto.splitlines()
 
-    # Passo 1 — remover cabeçalhos e rodapés de página
-    linhas = [l for l in linhas if not _RE_CABECALHO_PAG.match(l) and not _RE_RODAPE.search(l)]
+    # Passo 1 — remover cabeçalhos, rodapés e continuação de seção (2026)
+    linhas = [
+        l for l in linhas
+        if not _RE_CABECALHO_PAG.match(l)
+        and not _RE_RODAPE.search(l)
+        and not _RE_CONTINUACAO_GAB.match(l.strip())
+    ]
 
     # Passo 2 — dehifenização
     linhas = _dehifenizar(linhas)
@@ -226,7 +269,8 @@ def parsear_gabarito(texto: str) -> list[RespostaGabarito]:
 
         m = _RE_ALTERNATIVA_GAB.match(linha.strip())
         if m:
-            alts_atual.append((m.group(1), m.group(2) == "V", [m.group(3)]))
+            correta = (m.group(2) == "V") or (m.group(3) == "CORRETA")
+            alts_atual.append((m.group(1), correta, [m.group(4)]))
             continue
 
         if alts_atual and linha.strip():
@@ -305,6 +349,8 @@ def parsear_prova(texto: str) -> list[QuestaoProva]:
         sem_espacos = l.replace(" ", "")
         if sem_espacos and _RE_LIXO_PROVA.match(sem_espacos):
             continue
+        if _RE_LIXO_2026.search(l):
+            continue
         if _RE_COPYRIGHT.search(l):
             continue
         if _RE_ENEM_LINHA.match(l.strip()):
@@ -328,58 +374,45 @@ def parsear_prova(texto: str) -> list[QuestaoProva]:
             linhas = linhas[:idx]
             break
 
-    # Passo 5 — parse linha a linha
+    # Passo 5 — acumular linhas por questão e parsear em lote (detecta bloco A–E ao final)
     questoes: list[QuestaoProva] = []
 
     idioma_atual: Optional[Literal["ingles", "espanhol"]] = None
     numero_atual: Optional[int]    = None
     idioma_questao: Optional[Literal["ingles", "espanhol"]] = None
-    enunciado_linhas: list[str]    = []
-    # (letra_maiusc, linhas_texto)
-    alts_atual: list[tuple[str, list[str]]] = []
-    estado: str = "nenhum"  # "nenhum" | "enunciado" | "alternativa"
+    linhas_questao: list[str] = []
 
     def _finalizar_questao_prova() -> None:
         if numero_atual is None:
             return
         _validar_e_registrar_prova(
-            numero_atual, idioma_questao, enunciado_linhas, alts_atual, questoes
+            numero_atual, idioma_questao, linhas_questao, questoes
         )
 
     for linha in linhas:
         if _RE_INGLES.search(linha):
             _finalizar_questao_prova()
             numero_atual = None
-            estado = "nenhum"
+            linhas_questao = []
             idioma_atual = "ingles"
             continue
         if _RE_ESPANHOL.search(linha):
             _finalizar_questao_prova()
             numero_atual = None
-            estado = "nenhum"
+            linhas_questao = []
             idioma_atual = "espanhol"
             continue
 
         m = _RE_QUESTAO_PROVA.match(linha.strip())
         if m:
             _finalizar_questao_prova()
-            numero_atual     = int(m.group(1))
-            idioma_questao   = idioma_atual if numero_atual <= 5 else None
-            enunciado_linhas = []
-            alts_atual       = []
-            estado           = "enunciado"
+            numero_atual   = int(m.group(1))
+            idioma_questao = idioma_atual if numero_atual <= 5 else None
+            linhas_questao = []
             continue
 
-        m = _RE_ALT_PROVA.match(linha.strip())
-        if m:
-            estado = "alternativa"
-            alts_atual.append((m.group(1), [m.group(2)]))
-            continue
-
-        if estado == "enunciado" and linha.strip():
-            enunciado_linhas.append(linha.strip())
-        elif estado == "alternativa" and alts_atual and linha.strip():
-            alts_atual[-1][1].append(linha.strip())
+        if numero_atual is not None and linha.strip():
+            linhas_questao.append(linha.strip())
 
     _finalizar_questao_prova()
     return questoes
@@ -388,22 +421,29 @@ def parsear_prova(texto: str) -> list[QuestaoProva]:
 def _validar_e_registrar_prova(
     numero: int,
     idioma: Optional[Literal["ingles", "espanhol"]],
-    enunciado_linhas: list[str],
-    alts_raw: list[tuple[str, list[str]]],
+    linhas: list[str],
     destino: list[QuestaoProva],
 ) -> None:
-    LETRAS = list("ABCDE")
-    letras_presentes = [a[0] for a in alts_raw]
-    if len(alts_raw) != 5 or letras_presentes != LETRAS:
+    indices = _encontrar_bloco_alternativas(linhas)
+    if indices is None:
         raise ValueError(
             f"Questão {numero}: esperadas alternativas A–E em ordem, "
-            f"encontradas {letras_presentes}."
+            f"encontradas []."
         )
 
-    alternativas = [
-        AlternativaProva(letra=letra, texto=" ".join(linhas).strip())
-        for letra, linhas in alts_raw
-    ]
+    i_A, i_B, i_C, i_D, i_E = indices
+    limites = [i_A, i_B, i_C, i_D, i_E, len(linhas)]
+
+    enunciado_linhas = [l for l in linhas[:i_A] if l]
+
+    alternativas: list[AlternativaProva] = []
+    for k, letra in enumerate("ABCDE"):
+        bloco = linhas[limites[k]:limites[k + 1]]
+        m = _RE_ALT_PROVA.match(bloco[0])
+        texto_inicial = m.group(2).strip() if m else bloco[0]
+        continuacao = [l for l in bloco[1:] if l]
+        texto = " ".join([texto_inicial] + continuacao).strip()
+        alternativas.append(AlternativaProva(letra=letra, texto=texto))
 
     destino.append(QuestaoProva(
         numero=numero,

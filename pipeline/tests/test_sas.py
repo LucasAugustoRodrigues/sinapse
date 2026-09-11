@@ -244,3 +244,158 @@ DD alternativa d.
 """
     with pytest.raises(ValueError):
         parsear_prova(texto_invalido)
+
+
+# ============================================================================
+# Testes — parsear_prova formato 2026 (letra única + marca d'água "SAS ENEM")
+# ============================================================================
+
+FIXTURE_PROVA_2026 = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS
+Questões de 01 a 45
+Questões de 01 a 05 (opção inglês)
+QUESTÃO 01
+We were good, we were gold
+2026 SAS ENEM 2026 SAS ENEM 2026 SAS ENEM 2026 SAS ENEM
+I can buy myself flowers
+CYRUS, Miley. "Flowers". Disponível em: https://letras.mus.br/.
+A partir da leitura da canção, o eu lírico expressa o(a)
+A enfrentamento de uma traição.
+B rompimento com antigos ideais.
+C término de uma relação amorosa.
+D mudança brusca de estilo de vida.
+E perda de um valioso bem material.
+QUESTÃO 06
+Enunciado seis.
+A alternativa a.
+B alternativa b.
+C alternativa c.
+D alternativa d.
+E alternativa e.
+Proposta de Redação
+"""
+
+
+def test_prova_2026_total():
+    qs = parsear_prova(FIXTURE_PROVA_2026)
+    assert len(qs) == 2, f"esperadas 2 questões, obtidas {len(qs)}"
+
+
+def test_prova_2026_q1_metadados():
+    q = parsear_prova(FIXTURE_PROVA_2026)[0]
+    assert q.numero == 1
+    assert q.idioma == "ingles"
+    assert len(q.alternativas) == 5
+    assert [a.letra for a in q.alternativas] == ["A", "B", "C", "D", "E"]
+
+
+def test_prova_2026_q1_enunciado():
+    """Enunciado deve conter o texto da canção e o comando, mas não a marca d'água."""
+    q = parsear_prova(FIXTURE_PROVA_2026)[0]
+    assert "flowers" in q.enunciado
+    assert "A partir da leitura" in q.enunciado
+    assert "SAS ENEM" not in q.enunciado
+
+
+def test_prova_2026_q1_alternativa_a_nao_confunde_comando():
+    """'A partir da leitura...' não deve ser a alternativa A — apenas 'enfrentamento...' deve."""
+    q = parsear_prova(FIXTURE_PROVA_2026)[0]
+    alt_a = next(a for a in q.alternativas if a.letra == "A")
+    assert alt_a.texto == "enfrentamento de uma traição."
+
+
+def test_prova_2026_q6_sem_idioma():
+    q = parsear_prova(FIXTURE_PROVA_2026)[1]
+    assert q.numero == 6
+    assert q.idioma is None
+
+
+# ============================================================================
+# Testes — parsear_gabarito formato 2026 (cabeçalho grudado, "Gabarito:", CORRETA/INCORRETA)
+# ============================================================================
+
+FIXTURE_GABARITO_2026 = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS – Questões de 01 a 45
+Questões de 01 a 05 (opção inglês)
+01. Gabarito: A C 2 H 5
+a) CORRETA. Alternativa correta porque demonstra
+compreensão do texto analisado.
+LINGUAGENS CÓDIGOS E SUAS TECNOLOGIAS / CIÊNCIAS HUMANAS E SUAS TECNOLOGIAS 2
+b) INCORRETA. Comentário b.
+c) INCORRETA. Comentário c.
+d) INCORRETA. Comentário d.
+e) INCORRETA. Comentário e.
+02. Gabarito: C C 3 H 8
+a) INCORRETA. Comentário a.
+b) INCORRETA. Comentário b.
+c) CORRETA. Comentário c correto.
+d) INCORRETA. Comentário d.
+e) INCORRETA. Comentário e.
+LINGUAGENS CÓDIGOS E SUAS TECNOLOGIAS – Questões de 06 a 45
+06. Gabarito: B C 4 H 12
+a) INCORRETA. Comentário a.
+b) CORRETA. Comentário b correto.
+c) INCORRETA. Comentário c.
+d) INCORRETA. Comentário d.
+e) INCORRETA. Comentário e.
+Questões de 46 a 90
+46. Gabarito: A C 5 H 20
+a) CORRETA. Não deve ser parseado.
+b) INCORRETA. x.
+c) INCORRETA. x.
+d) INCORRETA. x.
+e) INCORRETA. x.
+"""
+
+
+def test_gabarito_2026_total():
+    qs = parsear_gabarito(FIXTURE_GABARITO_2026)
+    assert len(qs) == 3, f"esperadas 3 questões, obtidas {len(qs)}"
+
+
+def test_gabarito_2026_q01_metadados():
+    q = parsear_gabarito(FIXTURE_GABARITO_2026)[0]
+    assert q.numero == 1
+    assert q.gabarito == "A"
+    assert q.competencia == 2
+    assert q.habilidade == 5
+
+
+def test_gabarito_2026_q01_alternativa_correta():
+    """Somente a alt A (CORRETA) deve ter correta=True; as demais False."""
+    q = parsear_gabarito(FIXTURE_GABARITO_2026)[0]
+    corretas = [a for a in q.alternativas if a.correta]
+    assert len(corretas) == 1
+    assert corretas[0].letra == "A"
+    incorretas = [a for a in q.alternativas if not a.correta]
+    assert len(incorretas) == 4
+
+
+def test_gabarito_2026_q01_comentario_sem_lixo():
+    """Rodapé e cabeçalho de continuação não aparecem no comentário da alt A de Q01."""
+    q = parsear_gabarito(FIXTURE_GABARITO_2026)[0]
+    alt_a = next(a for a in q.alternativas if a.letra == "A")
+    assert "CIÊNCIAS HUMANAS" not in alt_a.comentario
+    assert "Questões de 06" not in alt_a.comentario
+
+
+def test_gabarito_2026_q01_comentario_duas_linhas():
+    """Segunda linha do comentário é anexada ao texto da alternativa."""
+    q = parsear_gabarito(FIXTURE_GABARITO_2026)[0]
+    alt_a = next(a for a in q.alternativas if a.letra == "A")
+    assert "compreensão do texto analisado" in alt_a.comentario
+
+
+def test_gabarito_2026_idioma_ingles():
+    """Questões 1–2 do bloco 'opção inglês' devem ter idioma='ingles'."""
+    qs = parsear_gabarito(FIXTURE_GABARITO_2026)
+    q01 = next(q for q in qs if q.numero == 1)
+    q02 = next(q for q in qs if q.numero == 2)
+    assert q01.idioma == "ingles"
+    assert q02.idioma == "ingles"
+
+
+def test_gabarito_2026_q06_sem_idioma():
+    q = parsear_gabarito(FIXTURE_GABARITO_2026)[2]
+    assert q.numero == 6
+    assert q.idioma is None

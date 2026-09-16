@@ -131,8 +131,23 @@ _RE_QUESTAO_PROVA = re.compile(r"^QUEST[ÃA]O\s+(\d{1,2})\s*$")
 # Alternativa da prova: "AA texto..." (dobrada, 2024) ou "A texto..." (única, 2026)
 _RE_ALT_PROVA = re.compile(r"^([A-E])\1?(?=\s)(.*)")
 
-# Fim do escopo da prova
-_RE_FIM_PROVA = re.compile(r"Proposta de Redação|Questões de 46 a 90")
+# Fim do escopo da prova — "PROPOSTA D" é o recorte de coluna de "PROPOSTA DE REDAÇÃO"
+_RE_FIM_PROVA = re.compile(r"^PROPOSTA\s+D\b|^INSTRUÇÕES\s+PA|Quest[õo]es de 46 a 90")
+
+_RE_FURNITURE_PROVA = re.compile(
+    r"^LINGUAGENS,\s+CÓDIGOS\s+E\s+SUAS\s+TECNOLOGIAS"
+    r"|CIÊNCIAS\s+HUMANAS\s+E\s+SUAS\s+TECNOLOGIAS"
+    r"|^\d+\s+LINGUAGENS[,]?\s+CÓDIGOS"
+    r"|E\s+SUAS\s+TECNOLOGIAS\s+E\s+REDAÇÃO"
+    r"|DERNO\s+\d+\s*\|?\s*AZUL"
+    r"|Quest[õo]es\s+de\s+06\s+a\s+45"
+    r"|\bCH\s+1[oº°]\s*DIA"
+    r"|\d+//\d+//\d+"
+    r"|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+    r"|__",
+    re.IGNORECASE,
+)
+_RE_PASSAGEM_COMPARTILHADA = re.compile(r"^Texto para as Quest[õo]es de \d+ a \d+", re.IGNORECASE)
 
 
 # ============================================================================
@@ -368,11 +383,31 @@ def parsear_prova(texto: str) -> list[QuestaoProva]:
     # Passo 3 — localizar início de Linguagens PRIMEIRO
     linhas = _localizar_inicio_linguagens(linhas)
 
-    # Passo 4 — cortar em "Proposta de Redação" ou "Questões de 46 a 90" (exclusive)
+    # Passo 4 — cortar em "PROPOSTA D" / "INSTRUÇÕES PA" / "Questões de 46 a 90" (exclusive)
     for idx, l in enumerate(linhas):
-        if _RE_FIM_PROVA.search(l):
+        if _RE_FIM_PROVA.search(l.strip()):
             linhas = linhas[:idx]
             break
+
+    # Passo 4b — remover passagens compartilhadas (da marca até a próxima QUESTÃO)
+    sem_passagem: list[str] = []
+    pulando = False
+    for l in linhas:
+        s = l.strip()
+        if _RE_PASSAGEM_COMPARTILHADA.match(s):
+            pulando = True
+            continue
+        if pulando:
+            if _RE_QUESTAO_PROVA.match(s):
+                pulando = False
+            else:
+                continue
+        sem_passagem.append(l)
+    linhas = sem_passagem
+
+    # Passo 4c — remover furniture (mantém linhas[0], o cabeçalho da seção)
+    if linhas:
+        linhas = [linhas[0]] + [l for l in linhas[1:] if not _RE_FURNITURE_PROVA.search(l.strip())]
 
     # Passo 5 — acumular linhas por questão e parsear em lote (detecta bloco A–E ao final)
     questoes: list[QuestaoProva] = []

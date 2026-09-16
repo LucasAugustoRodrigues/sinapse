@@ -138,7 +138,7 @@ BB alternativa b.
 CC alternativa c.
 DD alternativa d.
 EE alternativa e.
-Proposta de Redação
+PROPOSTA D
 QUESTÃO 46
 Não deve aparecer (Ciências Humanas).
 AA x.
@@ -272,7 +272,7 @@ B alternativa b.
 C alternativa c.
 D alternativa d.
 E alternativa e.
-Proposta de Redação
+PROPOSTA D
 """
 
 
@@ -399,3 +399,86 @@ def test_gabarito_2026_q06_sem_idioma():
     q = parsear_gabarito(FIXTURE_GABARITO_2026)[2]
     assert q.numero == 6
     assert q.idioma is None
+
+
+# ============================================================================
+# Testes — fronteira de fim de prova (lixo pós-alternativa E da Q45)
+# ============================================================================
+
+FIXTURE_PROVA_FRONTEIRA = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS
+Questões de 01 a 45
+QUESTÃO 45
+Enunciado da questão 45.
+A alternativa a da questão 45.
+B alternativa b da questão 45.
+C alternativa c da questão 45.
+D alternativa d da questão 45.
+E alternativa e da questão 45.
+CIÊNCIAS HUMANAS E SUAS TECNOLOGIAS
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS E REDAÇÃO | 1o DIA | CADERNO 1 | AZUL
+PROPOSTA D
+E REDAÇÃO
+Texto de redação que não deve aparecer nas alternativas.
+Mais texto de redação irrelevante.
+"""
+
+
+def test_fronteira_alt_e_sem_lixo():
+    q = parsear_prova(FIXTURE_PROVA_FRONTEIRA)[0]
+    assert q.numero == 45
+    alt_e = next(a for a in q.alternativas if a.letra == "E")
+    assert "CIÊNCIAS HUMANAS" not in alt_e.texto
+    assert "CADERNO" not in alt_e.texto
+    assert "AZUL" not in alt_e.texto
+    assert "PROPOSTA" not in alt_e.texto
+
+
+def test_fronteira_sem_texto_redacao():
+    q = parsear_prova(FIXTURE_PROVA_FRONTEIRA)[0]
+    for alt in q.alternativas:
+        assert "redação" not in alt.texto.lower()
+
+
+# ============================================================================
+# Testes — passagem compartilhada não vaza para alternativa E da questão anterior
+# ============================================================================
+
+FIXTURE_PROVA_PASSAGEM = """\
+LINGUAGENS, CÓDIGOS E SUAS TECNOLOGIAS
+Questões de 01 a 45
+QUESTÃO 05
+Enunciado da questão 5.
+A alternativa a da questão 5.
+B alternativa b da questão 5.
+C alternativa c da questão 5.
+D alternativa d da questão 5.
+E alternativa e da questão 5.
+Texto para as Questões de 06 a 10
+Primeiro parágrafo do texto de apoio compartilhado.
+Segundo parágrafo do texto de apoio compartilhado.
+Terceiro parágrafo do texto de apoio.
+QUESTÃO 06
+Enunciado da questão 6.
+A alternativa a da questão 6.
+B alternativa b da questão 6.
+C alternativa c da questão 6.
+D alternativa d da questão 6.
+E alternativa e da questão 6.
+PROPOSTA D
+"""
+
+
+def test_passagem_alt_e_sem_texto_apoio():
+    qs = parsear_prova(FIXTURE_PROVA_PASSAGEM)
+    q05 = next(q for q in qs if q.numero == 5)
+    alt_e = next(a for a in q05.alternativas if a.letra == "E")
+    assert "parágrafo" not in alt_e.texto
+    assert "apoio compartilhado" not in alt_e.texto
+
+
+def test_passagem_duas_questoes():
+    qs = parsear_prova(FIXTURE_PROVA_PASSAGEM)
+    assert len(qs) == 2
+    assert qs[0].numero == 5
+    assert qs[1].numero == 6

@@ -503,19 +503,24 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
     **75 com imagem**, **55 testes verdes**. (Caso 2026: descoberto que o *gabarito* mudou de
     formato — não era bug de Windows, era o parser do gabarito.)
 
+- **Limpeza de fronteira na alternativa E (16/09)** — corrigido o vazamento de lixo no
+  fim da última alternativa: corte de fim robusto (o "Proposta de Redação" não casava
+  porque o recorte de coluna quebra "PROPOSTA D | E REDAÇÃO"; agora pega `^PROPOSTA D`),
+  filtro de rodapé/cabeçalho de página na prova, e remoção de passagens compartilhadas.
+  Resultado: **2024 100% limpo**; 2026 com só **2 alternativas residuais** (Q10, Q39 —
+  texto multi-coluna). Tamanho médio de alternativa: **67 chars**. **59 testes verdes.**
+
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
 
 ### 📋 A fazer
 
-- [ ] **Limpar vazamento de rodapé/marca d'água no TEXTO da última alternativa (E)** —
-      pré-existente; atinge ~20 questões (12 em 2024, 8 em 2026), sempre a alt E, onde um
-      rodapé cai logo após o texto. Fix: adicionar strip de rodapé/marca d'água no Passo 1
-      do `parsear_prova`, como o gabarito já faz. **← próxima tarefa da fábrica.**
-- [ ] **`validar.py` + `revisao.md`** — detector de palavra colada (ex.: "aesperança",
-      "soremust", artefato do pdfplumber no Windows) e marcação `confianca_extracao="revisar"`;
-      relatório do que precisa de olho humano.
+- [ ] **`validar.py` + `revisao.md`** — (a) detector de palavra colada (ex.: "aesperança",
+      "soremust", artefato do pdfplumber no Windows); (b) sinalizar as 2 alternativas
+      residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
+      Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
+      + relatório do que precisa de olho humano.
 - [ ] **Implementar o `srs.js`** (funções puras) conforme §7, com testes de regressão
       (fixtures dos casos-âncora de §7.9).
 - [ ] **Construir o app PWA** (dados → domínio → UI; offline; instalável): `dados.js`,

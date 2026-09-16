@@ -510,9 +510,16 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   Resultado: **2024 100% limpo**; 2026 com só **2 alternativas residuais** (Q10, Q39 —
   texto multi-coluna). Tamanho médio de alternativa: **67 chars**. **59 testes verdes.**
 
+- **Fundação do app — scaffold + dados.js + srs.js (16/09)** — o app PWA (Vite + vanilla JS)
+  rodando: tela de abertura "noite neural"; `dados.js` (Repository) lê as 350 questões + a
+  matriz e persiste progresso no IndexedDB; `srs.js` (SM-2 adaptado, funções puras) com toda a
+  matemática do §7 — nota por acerto×confiança, `revisar()`, fila do dia, força/domínio por
+  habilidade (do **reconhecimento**, §7.2). **67 testes verdes** (Vitest).
+
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
+- **App PWA** — fundação (scaffold, dados, srs) pronta; próximo: o card (telas 3-em-1).
 
 ### 📋 A fazer
 
@@ -521,10 +528,9 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
       Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
       + relatório do que precisa de olho humano.
-- [ ] **Implementar o `srs.js`** (funções puras) conforme §7, com testes de regressão
-      (fixtures dos casos-âncora de §7.9).
-- [ ] **Construir o app PWA** (dados → domínio → UI; offline; instalável): `dados.js`,
-      `srs.js`, `estudo.js`, `ui.js`, service worker, as 6 telas, mapa do cérebro.
+- [ ] **App PWA — continuar** (dados+srs prontos): `estudo.js` (sessão + fila), o **card**
+      (telas 3-em-1 do §5.3, do mockup), telas de entorno (home, seletor de habilidade, mapa
+      do cérebro), service worker + manifest (offline/instalável).
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
 - [ ] **(Opcional)** mockup navegável das telas; saudação personalizada com o nome dela.
 

@@ -2,7 +2,8 @@
 // A UI nunca fala direto com o IndexedDB — só via dados.js.
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
-import { carregarQuestoes, carregarMatriz, descreverHabilidade } from './dados.js';
+import { carregarMatriz, descreverHabilidade } from './dados.js';
+import { iniciarSessao } from './estudo.js';
 
 // ============================================================================
 // Ícones SVG (substituem emoji — render idêntico em qualquer tablet)
@@ -181,7 +182,6 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
             `<div class="ask" style="margin-top:20px"><span class="n" aria-hidden="true">✓</span> A resposta, comentada</div>` +
             `<div class="alts" id="altsReveal"></div>` +
             `<div class="srs" id="srsNote"></div>` +
-            `<div class="proxima-slot"></div>` +
           `</section>` +
 
         `</div>` +
@@ -367,8 +367,17 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
       `<div class="body">No Sinapse, esta questão <b>volta ${_voltaTexto(notaFinal)}</b>.` +
       `<span class="hint">Agendada pela parte mais fraca — reconhecimento: ${_rotuloNota(notaRec)}; resolução: ${_rotuloNota(notaRes)} → ${_rotuloNota(notaFinal)}.</span></div>`;
 
-    // Notifica o driver
-    onConcluir?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto });
+    // Botão de avanço — o driver só é notificado quando o usuário termina de ler
+    const proxBtn = document.createElement('button');
+    proxBtn.className = 'cta';
+    proxBtn.style.marginTop = '20px';
+    proxBtn.textContent = 'Próxima questão →';
+    proxBtn.addEventListener('click', () => {
+      proxBtn.disabled = true;
+      onConcluir?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto });
+    }, { once: true });
+    container.querySelector('#panel2').appendChild(proxBtn);
+    setTimeout(atualizarAltura, 30);
   }
 
   // --------------------------------------------------------------------------
@@ -400,16 +409,15 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
 }
 
 // ============================================================================
-// Driver temporário — substituído por estudo.js na Fase 4
+// Boot — orquestra a sessão via estudo.js
 // ============================================================================
 
-// TODO(fase4): substituir por estudo.js
 async function _boot() {
   const app = document.getElementById('app');
 
-  let questoes, matriz;
+  let matriz, sessao;
   try {
-    [questoes, matriz] = await Promise.all([carregarQuestoes(), carregarMatriz()]);
+    [matriz, sessao] = await Promise.all([carregarMatriz(), iniciarSessao()]);
   } catch (e) {
     app.innerHTML =
       `<div class="loading-state">` +
@@ -420,31 +428,38 @@ async function _boot() {
     return;
   }
 
-  // Começa pela primeira questão com imagem (exercita o caminho de imagem)
-  let indiceAtual = questoes.findIndex(q => (q.imagens ?? []).length > 0);
-  if (indiceAtual < 0) indiceAtual = 0;
+  async function mostrarAtual() {
+    const prox = sessao.atual();
 
-  async function carregarQuestao(idx) {
-    const questao    = questoes[idx];
+    if (!prox) {
+      const { feitas, acertosReconhecimento } = sessao.resumo();
+      app.innerHTML =
+        `<div class="sinapse-app">` +
+          `<div class="fim-sessao">` +
+            `<div class="fim-icone">✓</div>` +
+            `<h2 class="fim-titulo">Sessão concluída</h2>` +
+            `<p class="fim-stats">${feitas} questão${feitas !== 1 ? 'ões' : ''} · ${acertosReconhecimento} de reconhecimento certo</p>` +
+            `<button class="cta" id="novaSessaoBtn">Nova sessão</button>` +
+          `</div>` +
+        `</div>`;
+      app.querySelector('#novaSessaoBtn').addEventListener('click', async () => {
+        sessao = await iniciarSessao();
+        await mostrarAtual();
+      });
+      return;
+    }
+
+    const { questao } = prox;
     const habCorreta = await descreverHabilidade(questao.habilidade);
-
     renderCard(app, { questao, matriz, habilidadeCorreta: habCorreta }, {
-      onConcluir(_resultado) {
-        const slot = app.querySelector('.proxima-slot');
-        if (!slot) return;
-        const btn = document.createElement('button');
-        btn.className = 'cta';
-        btn.style.marginTop = '16px';
-        btn.textContent = 'Próxima questão →';
-        btn.addEventListener('click', () => {
-          carregarQuestao((idx + 1) % questoes.length);
-        });
-        slot.appendChild(btn);
+      onConcluir: async ({ recAcerto, confianca, resAcerto }) => {
+        await sessao.registrar({ recAcerto, recConfianca: confianca, resAcerto });
+        await mostrarAtual();
       },
     });
   }
 
-  await carregarQuestao(indiceAtual);
+  await mostrarAtual();
 }
 
 _boot().catch(err => console.error('[Sinapse] boot error:', err));

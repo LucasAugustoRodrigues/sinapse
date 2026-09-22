@@ -343,6 +343,30 @@ body {
 }
 
 /* ============================================================
+   Tela de fim de sessão
+   ============================================================ */
+.fim-sessao {
+  min-height: 60dvh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 40px 16px; text-align: center;
+}
+.fim-icone {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.4);
+  color: var(--ok); font-size: 1.5rem; font-weight: 700;
+  display: grid; place-items: center;
+}
+.fim-titulo {
+  font-family: "Sora", sans-serif; font-size: 1.3rem; font-weight: 700;
+  margin: 0; color: var(--ink);
+}
+.fim-stats {
+  color: var(--muted); font-size: .95rem; margin: 0;
+}
+.fim-sessao .cta { max-width: 260px }
+
+/* ============================================================
    Acessibilidade + reduced motion
    ============================================================ */
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px }

@@ -516,10 +516,24 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   matemática do §7 — nota por acerto×confiança, `revisar()`, fila do dia, força/domínio por
   habilidade (do **reconhecimento**, §7.2). **67 testes verdes** (Vitest).
 
+- **Coração do app — card + sessão + seleção (22/09)** — a revisão do dia ponta a ponta:
+  - **Card 3-em-1 com dados reais** — as 3 telas do §5.3 (reconhecer+confiança → resolver →
+    revelação) rodando com as 350 questões, imagens, matriz e ícones SVG; auto-scroll pra a
+    confiança; altura do palco corrigida com `ResizeObserver` (imagem carrega e não corta).
+  - **`estudo.js` (sessão + fila)** — `iniciarSessao(filtros)` monta a fila do dia via
+    `srs.js`, reenfileira quem errou, persiste no IndexedDB; expõe `listarSimulados()` e
+    `contarRevisao(filtros)`.
+  - **Filtros de conteúdo (5.1a)** — espanhol **excluído por padrão** (ela treina só inglês);
+    o card identifica **"SAS 20XX · Simulado N"**. Garantido por teste unitário, não por sorte.
+  - **Tela de seleção (5.1b)** — antes da revisão ela escolhe **idioma** (Inglês padrão) e
+    **simulado**, vê **"N para revisar hoje"** ao vivo (recalcula ao trocar), e começa; o fim
+    de sessão volta pra essa tela. **82 testes verdes.**
+
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **App PWA** — fundação (scaffold, dados, srs) pronta; próximo: o card (telas 3-em-1).
+- **App PWA** — coração pronto (card + sessão + tela de seleção); próximo: telas de entorno
+  (progresso / **mapa do cérebro**, home) e o PWA em si (offline/instalável).
 
 ### 📋 A fazer
 
@@ -528,9 +542,11 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
       Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
       + relatório do que precisa de olho humano.
-- [ ] **App PWA — continuar** (dados+srs prontos): `estudo.js` (sessão + fila), o **card**
-      (telas 3-em-1 do §5.3, do mockup), telas de entorno (home, seletor de habilidade, mapa
-      do cérebro), service worker + manifest (offline/instalável).
+- [ ] **App PWA — telas de entorno**: **mapa do cérebro / progresso** (força e domínio por
+      habilidade, já calculados no `srs.js`), home/saudação, e o PWA em si (service worker +
+      manifest → offline/instalável no tablet).
+- [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
+      (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
 - [ ] **(Opcional)** mockup navegável das telas; saudação personalizada com o nome dela.
 

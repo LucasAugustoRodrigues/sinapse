@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, test, expect } from 'vitest';
-import { _reenfileirar, _montarCards } from './estudo.js';
+import { _reenfileirar, _montarCards, _filtrarQuestoes } from './estudo.js';
 import { estadoInicial } from './srs.js';
 
 // ============================================================================
@@ -10,6 +10,71 @@ import { estadoInicial } from './srs.js';
 const Q1 = { id: 'SAS-Q01', habilidade: 1, competencia: 1 };
 const Q2 = { id: 'SAS-Q02', habilidade: 2, competencia: 1 };
 const Q3 = { id: 'SAS-Q03', habilidade: 3, competencia: 1 };
+
+// ============================================================================
+// Fixtures com campos de filtro
+// ============================================================================
+
+const QEN  = { id: 'Q-EN',  habilidade: 1, competencia: 1, idioma: 'ingles',   fonte: 'SAS2024', simulado: 1 };
+const QES  = { id: 'Q-ES',  habilidade: 1, competencia: 1, idioma: 'espanhol', fonte: 'SAS2024', simulado: 1 };
+const QN1  = { id: 'Q-N1',  habilidade: 2, competencia: 1, idioma: null,       fonte: 'SAS2024', simulado: 1 };
+const QN2  = { id: 'Q-N2',  habilidade: 3, competencia: 2, idioma: null,       fonte: 'SAS2024', simulado: 2 };
+const QN3  = { id: 'Q-N3',  habilidade: 4, competencia: 2, idioma: null,       fonte: 'SAS2026', simulado: 1 };
+
+// ============================================================================
+// _filtrarQuestoes
+// ============================================================================
+
+describe('_filtrarQuestoes', () => {
+  const todas = [QEN, QES, QN1, QN2, QN3];
+
+  test('idioma "ingles": mantém ingles + null, exclui espanhol', () => {
+    const res = _filtrarQuestoes(todas, { idioma: 'ingles' });
+    expect(res.map(q => q.id)).toContain('Q-EN');
+    expect(res.map(q => q.id)).toContain('Q-N1');
+    expect(res.map(q => q.id)).not.toContain('Q-ES');
+  });
+
+  test('idioma "espanhol": mantém espanhol + null, exclui ingles', () => {
+    const res = _filtrarQuestoes(todas, { idioma: 'espanhol' });
+    expect(res.map(q => q.id)).toContain('Q-ES');
+    expect(res.map(q => q.id)).toContain('Q-N1');
+    expect(res.map(q => q.id)).not.toContain('Q-EN');
+  });
+
+  test('filtro por fonte+simulado: mantém só o simulado pedido', () => {
+    const res = _filtrarQuestoes(todas, { idioma: 'ingles', fonte: 'SAS2024', simulado: 1 });
+    const ids = res.map(q => q.id);
+    expect(ids).toContain('Q-EN');
+    expect(ids).toContain('Q-N1');
+    expect(ids).not.toContain('Q-N2');  // simulado 2
+    expect(ids).not.toContain('Q-N3');  // fonte diferente
+  });
+
+  test('filtro por fonte sem simulado: mantém toda a fonte', () => {
+    const res = _filtrarQuestoes(todas, { idioma: 'ingles', fonte: 'SAS2024' });
+    const ids = res.map(q => q.id);
+    expect(ids).toContain('Q-N1');
+    expect(ids).toContain('Q-N2');
+    expect(ids).not.toContain('Q-N3');  // SAS2026
+  });
+
+  test('combinação idioma + simulado específico', () => {
+    const res = _filtrarQuestoes(todas, { idioma: 'espanhol', fonte: 'SAS2024', simulado: 1 });
+    const ids = res.map(q => q.id);
+    expect(ids).toContain('Q-ES');
+    expect(ids).toContain('Q-N1');
+    expect(ids).not.toContain('Q-EN');   // idioma errado
+    expect(ids).not.toContain('Q-N2');   // simulado 2
+  });
+
+  test('default de idioma (filtros={}) exclui espanhol', () => {
+    const res = _filtrarQuestoes(todas, {});
+    expect(res.map(q => q.id)).not.toContain('Q-ES');
+    expect(res.map(q => q.id)).toContain('Q-EN');
+    expect(res.map(q => q.id)).toContain('Q-N1');
+  });
+});
 
 // ============================================================================
 // _reenfileirar

@@ -116,6 +116,11 @@ function _buildEnunBloco(questao, isReconhecer) {
     ? `<span class="idioma-tag">${_esc(_IDIOMA_LABEL[questao.idioma] ?? questao.idioma)}</span>`
     : `<span>${isReconhecer ? 'identifique a habilidade' : 'agora, resolva'}</span>`;
 
+  const anoFonte   = parseInt((questao.fonte ?? '').replace(/\D/g, ''), 10) || 0;
+  const tagSimulado = questao.fonte && questao.simulado
+    ? ` · SAS ${anoFonte} · Simulado ${questao.simulado}`
+    : '';
+
   const imgs = (questao.imagens ?? []).map(caminho =>
     `<div class="img-wrap"><img src="/${_esc(caminho)}" alt=""></div>`
   ).join('');
@@ -126,7 +131,7 @@ function _buildEnunBloco(questao, isReconhecer) {
 
   return (
     `<div class="enun">` +
-      `<div class="meta"><span>Questão · ${_esc(questao.area)}</span>${metaRight}</div>` +
+      `<div class="meta"><span>Questão · ${_esc(questao.area)}${_esc(tagSimulado)}</span>${metaRight}</div>` +
       `<div class="quote">${_enun2html(questao.enunciado)}</div>` +
       imgs +
       cmd +
@@ -417,7 +422,7 @@ async function _boot() {
 
   let matriz, sessao;
   try {
-    [matriz, sessao] = await Promise.all([carregarMatriz(), iniciarSessao()]);
+    [matriz, sessao] = await Promise.all([carregarMatriz(), iniciarSessao({ idioma: 'ingles' })]);
   } catch (e) {
     app.innerHTML =
       `<div class="loading-state">` +
@@ -443,7 +448,7 @@ async function _boot() {
           `</div>` +
         `</div>`;
       app.querySelector('#novaSessaoBtn').addEventListener('click', async () => {
-        sessao = await iniciarSessao();
+        sessao = await iniciarSessao({ idioma: 'ingles' });
         await mostrarAtual();
       });
       return;

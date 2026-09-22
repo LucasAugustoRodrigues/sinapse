@@ -367,6 +367,77 @@ body {
 .fim-sessao .cta { max-width: 260px }
 
 /* ============================================================
+   Tela de seleção
+   ============================================================ */
+.selecao {
+  padding: 32px 0 56px;
+  display: flex; flex-direction: column;
+}
+.sel-brand { display: flex; align-items: center; gap: 11px; margin-bottom: 32px }
+.sel-brand h1 {
+  font-family: "Sora", sans-serif; font-weight: 700; font-size: 1.28rem;
+  margin: 0; letter-spacing: .2px;
+}
+.sel-titulo {
+  font-family: "Sora", sans-serif; font-size: 1.65rem; font-weight: 700;
+  margin: 0 0 6px; color: var(--ink); letter-spacing: -.2px;
+}
+.sel-sub { color: var(--muted); font-size: .95rem; margin: 0 0 32px }
+
+.sel-section { margin-bottom: 26px }
+.sel-label {
+  font-family: "Sora", sans-serif; font-size: .68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .7px; color: var(--signal); margin-bottom: 10px;
+}
+
+/* Toggle de idioma */
+.idioma-toggle {
+  display: flex; width: fit-content;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden;
+}
+.it-btn {
+  appearance: none; background: var(--panel); border: none; color: var(--muted);
+  padding: 0 26px; height: 44px; font-family: "Figtree", sans-serif;
+  font-size: .95rem; font-weight: 600; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.it-btn + .it-btn { border-left: 1px solid var(--line) }
+.it-btn.sel { background: rgba(139,123,245,.18); color: var(--synapse) }
+.it-btn:hover:not(.sel) { background: var(--panel2); color: var(--ink) }
+
+/* Lista de simulados */
+.sim-lista { display: flex; flex-direction: column; gap: 8px }
+.sim-item {
+  appearance: none; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); color: var(--ink); padding: 14px 16px;
+  text-align: left; font-family: "Figtree", sans-serif; font-size: .97rem;
+  cursor: pointer; min-height: 44px;
+  transition: border-color .15s, background .15s;
+}
+.sim-item:hover { border-color: rgba(139,123,245,.5) }
+.sim-item.sel {
+  border-color: var(--synapse); background: rgba(139,123,245,.12);
+  box-shadow: 0 0 0 1px rgba(139,123,245,.25);
+}
+
+/* Contador ao vivo */
+.sel-contador {
+  display: flex; align-items: baseline; gap: 10px; margin: 4px 0 6px;
+}
+.cont-num {
+  font-family: "Sora", sans-serif; font-size: 3rem; font-weight: 700;
+  color: var(--synapse); line-height: 1;
+}
+.cont-label { color: var(--muted); font-size: .92rem }
+
+/* Estado zero (nada para revisar) */
+.zero-state {
+  padding: 14px 16px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(52,211,153,.3); background: rgba(52,211,153,.07);
+  color: var(--ok-ink); font-size: .9rem; text-align: center; line-height: 1.5;
+}
+
+/* ============================================================
    Acessibilidade + reduced motion
    ============================================================ */
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px }

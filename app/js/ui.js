@@ -3,7 +3,7 @@
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
 import { carregarMatriz, descreverHabilidade } from './dados.js';
-import { iniciarSessao } from './estudo.js';
+import { iniciarSessao, listarSimulados, contarRevisao } from './estudo.js';
 
 // ============================================================================
 // Ícones SVG (substituem emoji — render idêntico em qualquer tablet)
@@ -414,22 +414,147 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
 }
 
 // ============================================================================
-// Boot — orquestra a sessão via estudo.js
+// Tela de seleção
 // ============================================================================
 
-async function _boot() {
-  const app = document.getElementById('app');
-
-  let matriz, sessao;
+async function renderSelecao(app) {
+  let simulados;
   try {
-    [matriz, sessao] = await Promise.all([carregarMatriz(), iniciarSessao({ idioma: 'ingles' })]);
+    simulados = await listarSimulados();
   } catch (e) {
     app.innerHTML =
       `<div class="loading-state">` +
         `<p>Não foi possível carregar as questões.</p>` +
         `<p style="font-size:.8rem;color:var(--muted2);margin-top:6px">Rode <code>npm run dev</code> para copiar os dados para public/.</p>` +
       `</div>`;
-    console.error('[Sinapse] boot error:', e);
+    console.error('[Sinapse] renderSelecao error:', e);
+    return;
+  }
+
+  app.innerHTML =
+    `<div class="sinapse-app">` +
+      `<div class="selecao">` +
+
+        `<div class="sel-brand">` +
+          _LOGO_SVG +
+          `<h1>Sinapse</h1>` +
+        `</div>` +
+
+        `<h2 class="sel-titulo">Revisão do dia</h2>` +
+        `<p class="sel-sub">Escolha o que treinar hoje.</p>` +
+
+        `<div class="sel-section">` +
+          `<div class="sel-label">Idioma</div>` +
+          `<div class="idioma-toggle" id="idiomaToggle">` +
+            `<button class="it-btn sel" data-idioma="ingles">Inglês</button>` +
+            `<button class="it-btn" data-idioma="espanhol">Espanhol</button>` +
+          `</div>` +
+        `</div>` +
+
+        `<div class="sel-section">` +
+          `<div class="sel-label">Simulado</div>` +
+          `<div class="sim-lista" id="simLista">` +
+            `<button class="sim-item sel" data-sim="todos">Todos os simulados</button>` +
+            simulados.map((s, i) =>
+              `<button class="sim-item" data-sim="${i}">${_esc(s.label)}</button>`
+            ).join('') +
+          `</div>` +
+        `</div>` +
+
+        `<div class="sel-section">` +
+          `<div class="sel-contador">` +
+            `<span class="cont-num" id="contNum">—</span>` +
+            `<span class="cont-label">para revisar hoje</span>` +
+          `</div>` +
+          `<div class="zero-state" id="zeroState" hidden>` +
+            `Nada para revisar hoje 🎉 — volte amanhã` +
+          `</div>` +
+        `</div>` +
+
+        `<button class="cta" id="comecarBtn" disabled>Começar revisão</button>` +
+
+      `</div>` +
+    `</div>`;
+
+  // Estado local
+  let idiomaSel = 'ingles';
+  let simSel    = null;   // null = "Todos os simulados"
+  let _seq      = 0;      // guarda de sequência para contarRevisao
+
+  const idiomaToggleEl = app.querySelector('#idiomaToggle');
+  const simListaEl     = app.querySelector('#simLista');
+  const contNumEl      = app.querySelector('#contNum');
+  const zeroStateEl    = app.querySelector('#zeroState');
+  const comecarBtn     = app.querySelector('#comecarBtn');
+
+  function _getFiltros() {
+    const f = { idioma: idiomaSel };
+    if (simSel) { f.fonte = simSel.fonte; f.simulado = simSel.simulado; }
+    return f;
+  }
+
+  async function recalcular() {
+    const seq = ++_seq;
+    contNumEl.textContent = '—';
+    comecarBtn.disabled = true;
+    zeroStateEl.hidden = true;
+
+    let n = 0;
+    try { n = await contarRevisao(_getFiltros()); } catch { n = 0; }
+
+    if (seq !== _seq) return;  // resposta obsoleta — descarta
+
+    contNumEl.textContent = String(n);
+    if (n > 0) {
+      comecarBtn.disabled = false;
+    } else {
+      zeroStateEl.hidden = false;
+    }
+  }
+
+  idiomaToggleEl.addEventListener('click', e => {
+    const btn = e.target.closest('.it-btn');
+    if (!btn) return;
+    idiomaSel = btn.dataset.idioma;
+    idiomaToggleEl.querySelectorAll('.it-btn').forEach(b =>
+      b.classList.toggle('sel', b === btn)
+    );
+    recalcular();
+  });
+
+  simListaEl.addEventListener('click', e => {
+    const item = e.target.closest('.sim-item');
+    if (!item) return;
+    simSel = item.dataset.sim === 'todos' ? null : simulados[parseInt(item.dataset.sim, 10)];
+    simListaEl.querySelectorAll('.sim-item').forEach(el =>
+      el.classList.toggle('sel', el === item)
+    );
+    recalcular();
+  });
+
+  comecarBtn.addEventListener('click', () => {
+    if (comecarBtn.disabled) return;
+    iniciarRevisao(app, _getFiltros());
+  });
+
+  recalcular();  // contagem inicial
+}
+
+// ============================================================================
+// Sessão de revisão (loop de cards + fim de sessão)
+// ============================================================================
+
+async function iniciarRevisao(app, filtros) {
+  let matriz, sessao;
+  try {
+    [matriz, sessao] = await Promise.all([carregarMatriz(), iniciarSessao(filtros)]);
+  } catch (e) {
+    app.innerHTML =
+      `<div class="loading-state">` +
+        `<p>Não foi possível carregar as questões.</p>` +
+        `<p style="font-size:.8rem;color:var(--muted2);margin-top:6px">Rode <code>npm run dev</code> para copiar os dados para public/.</p>` +
+      `</div>`;
+    console.error('[Sinapse] iniciarRevisao error:', e);
     return;
   }
 
@@ -444,13 +569,10 @@ async function _boot() {
             `<div class="fim-icone">✓</div>` +
             `<h2 class="fim-titulo">Sessão concluída</h2>` +
             `<p class="fim-stats">${feitas} questão${feitas !== 1 ? 'ões' : ''} · ${acertosReconhecimento} de reconhecimento certo</p>` +
-            `<button class="cta" id="novaSessaoBtn">Nova sessão</button>` +
+            `<button class="cta" id="voltarBtn">Escolher outra revisão</button>` +
           `</div>` +
         `</div>`;
-      app.querySelector('#novaSessaoBtn').addEventListener('click', async () => {
-        sessao = await iniciarSessao({ idioma: 'ingles' });
-        await mostrarAtual();
-      });
+      app.querySelector('#voltarBtn').addEventListener('click', () => renderSelecao(app));
       return;
     }
 
@@ -465,6 +587,14 @@ async function _boot() {
   }
 
   await mostrarAtual();
+}
+
+// ============================================================================
+// Boot — roteador de telas
+// ============================================================================
+
+async function _boot() {
+  await renderSelecao(document.getElementById('app'));
 }
 
 _boot().catch(err => console.error('[Sinapse] boot error:', err));

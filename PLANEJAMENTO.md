@@ -529,11 +529,17 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
     **simulado**, vê **"N para revisar hoje"** ao vivo (recalcula ao trocar), e começa; o fim
     de sessão volta pra essa tela. **82 testes verdes.**
 
+- **Mapa do cérebro / tela Progresso (23/09)** — a joia do §5: `mapaCerebro()` no `estudo.js`
+  (força + domínio por habilidade, do **reconhecimento**), e a tela em `ui.js` com as habilidades
+  como **neurônios agrupados por competência que acendem pelas faixas do §7.7** (verde ≥0.8 ·
+  âmbar 0.5–0.8 · apagada <0.5 · cinza sem dados), detalhe ao tocar, legenda e contagem de
+  acesas. **87 testes verdes.**
+
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **App PWA** — coração pronto (card + sessão + tela de seleção); próximo: telas de entorno
-  (progresso / **mapa do cérebro**, home) e o PWA em si (offline/instalável).
+- **App PWA** — coração + **mapa do cérebro** prontos; próximo: home/saudação e o **PWA** em si
+  (service worker + manifest → offline/instalável no tablet).
 
 ### 📋 A fazer
 
@@ -542,9 +548,9 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
       Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
       + relatório do que precisa de olho humano.
-- [ ] **App PWA — telas de entorno**: **mapa do cérebro / progresso** (força e domínio por
-      habilidade, já calculados no `srs.js`), home/saudação, e o PWA em si (service worker +
-      manifest → offline/instalável no tablet).
+- [ ] **App PWA — home/saudação** — card do dia ("Revisão de hoje — N questões") + pulsos
+      (habilidades dominadas, streak de dias, questões na semana); atalhos p/ revisão e progresso.
+- [ ] **PWA de verdade** — service worker + manifest → **offline e instalável no tablet dela**.
 - [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
       (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).

@@ -509,3 +509,24 @@ describe("dominio", () => {
     expect(dominio(cards, 5)).toBeCloseTo(0.6);
   });
 });
+
+// ============================================================================
+// revisar — tempoMs no histórico (§5.6a)
+// ============================================================================
+
+describe("revisar — tempoMs no histórico", () => {
+  test("tempoMs: 83450 grava 83450 no histórico", () => {
+    const c = revisar(cardNovo, { ...REC_BOM, tempoMs: 83450 }, HOJE);
+    expect(c.historico[0].tempoMs).toBe(83450);
+  });
+
+  test("sem tempoMs grava null no histórico", () => {
+    const c = revisar(cardNovo, REC_BOM, HOJE);
+    expect(c.historico[0].tempoMs).toBeNull();
+  });
+
+  test("tempoMs: NaN grava null no histórico", () => {
+    const c = revisar(cardNovo, { ...REC_BOM, tempoMs: NaN }, HOJE);
+    expect(c.historico[0].tempoMs).toBeNull();
+  });
+});

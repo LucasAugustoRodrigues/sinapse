@@ -201,7 +201,7 @@ export function revisar(card, resultado, hoje, cfg = config) {
     ultimaRevisao:  hoje,
     proximaRevisao,
     flagRevisar:    novaFlag,
-    historico:      [...card.historico, { data: hoje, recAcerto, recConfianca, resAcerto, notaRec, notaRes, notaFinal }],
+    historico:      [...card.historico, { data: hoje, recAcerto, recConfianca, resAcerto, notaRec, notaRes, notaFinal, tempoMs: Number.isFinite(resultado.tempoMs) ? Math.round(resultado.tempoMs) : null }],
   };
 }
 

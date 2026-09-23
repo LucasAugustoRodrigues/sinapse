@@ -204,6 +204,21 @@ export async function resumoInicio(filtros = { idioma: 'ingles' }) {
 }
 
 // ============================================================================
+// _resumoTempos — estatísticas de tempo da sessão (funções puras)
+// ============================================================================
+
+/** Com lista vazia: { total: 0, media: null, max: null }. */
+export function _resumoTempos(tempos) {
+  if (tempos.length === 0) return { total: 0, media: null, max: null };
+  const total = tempos.reduce((s, t) => s + t, 0);
+  return {
+    total,
+    media: Math.round(total / tempos.length),
+    max:   Math.max(...tempos),
+  };
+}
+
+// ============================================================================
 // iniciarSessao — ponto de entrada da camada de domínio
 // ============================================================================
 
@@ -229,6 +244,7 @@ export async function iniciarSessao(filtros = {}) {
   let indice                = 0;
   let acertosReconhecimento = 0;
   let feitas                = 0;
+  const temposSessao        = [];
 
   return {
     /** { questao, card } para a posição atual, ou null quando a fila acabou. */
@@ -241,11 +257,12 @@ export async function iniciarSessao(filtros = {}) {
     },
 
     /** Persiste o resultado, reenfileira se errou, avança o índice. */
-    async registrar({ recAcerto, recConfianca, resAcerto }) {
+    async registrar({ recAcerto, recConfianca, resAcerto, tempoMs }) {
       if (indice >= fila.length) return;
       const ref   = fila[indice];
       const card  = mapaCards[ref.questaoId];
-      const card2 = revisar(card, { recAcerto, recConfianca, resAcerto }, hojeEmDias());
+      const card2 = revisar(card, { recAcerto, recConfianca, resAcerto, tempoMs }, hojeEmDias());
+      if (Number.isFinite(tempoMs)) temposSessao.push(tempoMs);
 
       await salvarProgresso(card.cardId, card2);
       mapaCards[card.cardId] = card2;
@@ -260,7 +277,8 @@ export async function iniciarSessao(filtros = {}) {
 
     /** Estatísticas da sessão até o momento. */
     resumo() {
-      return { feitas, total, acertosReconhecimento };
+      const { total: tempoTotalMs, media: tempoMedioMs, max: maisDemoradaMs } = _resumoTempos(temposSessao);
+      return { feitas, total, acertosReconhecimento, tempoTotalMs, tempoMedioMs, maisDemoradaMs };
     },
   };
 }

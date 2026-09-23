@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, test, expect } from 'vitest';
-import { _reenfileirar, _montarCards, _filtrarQuestoes, _montarMapa, _streak, _diaLocal } from './estudo.js';
+import { _reenfileirar, _montarCards, _filtrarQuestoes, _montarMapa, _streak, _diaLocal, _resumoTempos } from './estudo.js';
 import { estadoInicial, BOM } from './srs.js';
 
 // ============================================================================
@@ -266,5 +266,19 @@ describe('_montarCards', () => {
     expect(mapa[Q1.id].estado).toBe('novo');
     expect(mapa[Q2.id]).toBe(salvo);
     expect(mapa[Q3.id].estado).toBe('novo');
+  });
+});
+
+// ============================================================================
+// _resumoTempos
+// ============================================================================
+
+describe('_resumoTempos', () => {
+  test('lista vazia → { total: 0, media: null, max: null }', () => {
+    expect(_resumoTempos([])).toEqual({ total: 0, media: null, max: null });
+  });
+
+  test('[60000, 120000, 90000] → { total: 270000, media: 90000, max: 120000 }', () => {
+    expect(_resumoTempos([60000, 120000, 90000])).toEqual({ total: 270000, media: 90000, max: 120000 });
   });
 });

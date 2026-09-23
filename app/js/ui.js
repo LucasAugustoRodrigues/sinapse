@@ -3,7 +3,8 @@
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
 import { carregarMatriz, descreverHabilidade } from './dados.js';
-import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro } from './estudo.js';
+import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInicio, hojeEmDias } from './estudo.js';
+import { saudacao, fraseDoDia } from './perfil.js';
 
 // ============================================================================
 // Ícones SVG (substituem emoji — render idêntico em qualquer tablet)
@@ -414,6 +415,90 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
 }
 
 // ============================================================================
+// Tela Início
+// ============================================================================
+
+async function renderHome(app) {
+  let resumo;
+  try {
+    resumo = await resumoInicio();
+  } catch (e) {
+    app.innerHTML =
+      `<div class="loading-state">` +
+        `<p>Não foi possível carregar o resumo.</p>` +
+        `<p style="font-size:.8rem;color:var(--muted2);margin-top:6px">Rode <code>npm run dev</code> para copiar os dados para public/.</p>` +
+      `</div>`;
+    console.error('[Sinapse] renderHome error:', e);
+    return;
+  }
+
+  const { revisaoHoje, dominadas, total, streak, questoesSemana } = resumo;
+  const hora  = new Date().getHours();
+  const dia   = hojeEmDias();
+  const saud  = saudacao(hora);
+  const frase = fraseDoDia(dia);
+
+  const fraseHtml = frase.autor
+    ? `<p class="home-frase">${_esc(frase.texto)}<span class="home-frase-autor">— ${_esc(frase.autor)}</span></p>`
+    : `<p class="home-frase">${_esc(frase.texto)}</p>`;
+
+  const streakLabel = streak === 1 ? 'dia seguido' : 'dias seguidos';
+
+  const ctaCard = revisaoHoje > 0
+    ? `<button class="cta" id="comecarHome">Começar revisão</button>`
+    : `<div class="home-tudo-em-dia">Tudo em dia 🎉 Volte amanhã.</div>`;
+
+  app.innerHTML =
+    `<div class="sinapse-app">` +
+      `<div class="inicio">` +
+
+        `<div class="sel-brand">` +
+          _LOGO_SVG +
+          `<h1>Sinapse</h1>` +
+        `</div>` +
+
+        `<h2 class="home-saudacao">${_esc(saud)}</h2>` +
+        fraseHtml +
+
+        `<div class="home-card-dia">` +
+          `<div class="home-card-rotulo">Revisão de hoje</div>` +
+          `<div class="home-card-num">${revisaoHoje}<span class="home-card-unidade">questões</span></div>` +
+          ctaCard +
+        `</div>` +
+
+        `<div class="home-pulsos">` +
+          `<div class="home-pulso">` +
+            `<span class="home-pulso-val">${dominadas}/${total}</span>` +
+            `<span class="home-pulso-rot">habilidades dominadas</span>` +
+          `</div>` +
+          `<div class="home-pulso">` +
+            `<span class="home-pulso-val">${streak}</span>` +
+            `<span class="home-pulso-rot">${_esc(streakLabel)}</span>` +
+          `</div>` +
+          `<div class="home-pulso">` +
+            `<span class="home-pulso-val">${questoesSemana}</span>` +
+            `<span class="home-pulso-rot">questões na semana</span>` +
+          `</div>` +
+        `</div>` +
+
+        `<div class="home-atalhos">` +
+          `<button class="ghost" id="homeEscolherBtn">Escolher treino</button>` +
+          `<button class="ghost" id="homeProgressoBtn">Ver progresso</button>` +
+        `</div>` +
+
+      `</div>` +
+    `</div>`;
+
+  if (revisaoHoje > 0) {
+    app.querySelector('#comecarHome').addEventListener('click', () =>
+      iniciarRevisao(app, { idioma: 'ingles' })
+    );
+  }
+  app.querySelector('#homeEscolherBtn').addEventListener('click', () => renderSelecao(app));
+  app.querySelector('#homeProgressoBtn').addEventListener('click', () => renderProgresso(app));
+}
+
+// ============================================================================
 // Tela de seleção
 // ============================================================================
 
@@ -472,7 +557,7 @@ async function renderSelecao(app) {
         `</div>` +
 
         `<button class="cta" id="comecarBtn" disabled>Começar revisão</button>` +
-        `<button class="ghost" id="progressoBtn">Ver meu progresso</button>` +
+        `<button class="ghost" id="voltarHomeBtn">← Início</button>` +
 
       `</div>` +
     `</div>`;
@@ -538,7 +623,7 @@ async function renderSelecao(app) {
     iniciarRevisao(app, _getFiltros());
   });
 
-  app.querySelector('#progressoBtn').addEventListener('click', () => renderProgresso(app));
+  app.querySelector('#voltarHomeBtn').addEventListener('click', () => renderHome(app));
 
   recalcular();  // contagem inicial
 }
@@ -572,10 +657,10 @@ async function iniciarRevisao(app, filtros) {
             `<div class="fim-icone">✓</div>` +
             `<h2 class="fim-titulo">Sessão concluída</h2>` +
             `<p class="fim-stats">${feitas} questão${feitas !== 1 ? 'ões' : ''} · ${acertosReconhecimento} de reconhecimento certo</p>` +
-            `<button class="cta" id="voltarBtn">Escolher outra revisão</button>` +
+            `<button class="cta" id="voltarBtn">Voltar ao início</button>` +
           `</div>` +
         `</div>`;
-      app.querySelector('#voltarBtn').addEventListener('click', () => renderSelecao(app));
+      app.querySelector('#voltarBtn').addEventListener('click', () => renderHome(app));
       return;
     }
 
@@ -686,9 +771,13 @@ async function renderProgresso(app) {
     const s    = statMap.get(num);
     const info = habInfo.get(num) ?? {};
 
-    const forcaStr = (s.forca === null || s.forca === undefined)
-      ? 'Coletando… treine mais algumas'
-      : `${Math.round(s.forca * 100)}%`;
+    const naoTreinou = s.tentativas === 0;
+    const forcaStr = naoTreinou
+      ? 'Ainda não treinada'
+      : (s.forca === null || s.forca === undefined)
+        ? 'Coletando… treine mais algumas'
+        : `${Math.round(s.forca * 100)}%`;
+    const dominioStr = naoTreinou ? '—' : `${Math.round(s.dominio * 100)}%`;
 
     detailEl.innerHTML =
       `<div class="neuron-detail-content">` +
@@ -703,7 +792,7 @@ async function renderProgresso(app) {
           `</div>` +
           `<div class="nd-stat-item">` +
             `<span class="nd-stat-label">Domínio</span>` +
-            `<span class="nd-stat-val">${Math.round(s.dominio * 100)}%</span>` +
+            `<span class="nd-stat-val">${_esc(dominioStr)}</span>` +
           `</div>` +
           `<div class="nd-stat-item">` +
             `<span class="nd-stat-label">Questões</span>` +
@@ -717,7 +806,7 @@ async function renderProgresso(app) {
       `</div>`;
   });
 
-  app.querySelector('#voltarProgBtn').addEventListener('click', () => renderSelecao(app));
+  app.querySelector('#voltarProgBtn').addEventListener('click', () => renderHome(app));
 }
 
 // ============================================================================
@@ -725,7 +814,7 @@ async function renderProgresso(app) {
 // ============================================================================
 
 async function _boot() {
-  await renderSelecao(document.getElementById('app'));
+  await renderHome(document.getElementById('app'));
 }
 
 _boot().catch(err => console.error('[Sinapse] boot error:', err));

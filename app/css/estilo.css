@@ -575,3 +575,89 @@ body {
   .conf button .t { font-size: .78rem }
   .brand .tag { display: none }
 }
+
+/* ============================================================
+   Tela Início
+   ============================================================ */
+.inicio {
+  padding: 32px 0 56px;
+  display: flex; flex-direction: column;
+}
+
+.home-saudacao {
+  font-family: "Sora", sans-serif; font-size: 1.8rem; font-weight: 700;
+  margin: 0 0 10px; color: var(--ink); letter-spacing: -.2px;
+}
+
+.home-frase {
+  color: var(--muted); font-style: italic; font-size: 1rem;
+  max-width: 480px; margin: 0 0 28px; line-height: 1.6;
+}
+
+.home-frase-autor {
+  display: block; font-size: .85rem; margin-top: 5px;
+  font-style: normal; color: var(--muted2);
+}
+
+.home-card-dia {
+  background: var(--panel);
+  border: 1px solid var(--synapse);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px rgba(139,123,245,.18), 0 12px 32px rgba(139,123,245,.1);
+  padding: 22px 20px; margin-bottom: 20px;
+}
+
+.home-card-rotulo {
+  font-family: "Sora", sans-serif; font-size: .68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .7px; color: var(--muted2);
+  margin-bottom: 8px;
+}
+
+.home-card-num {
+  font-family: "Sora", sans-serif; font-size: 3rem; font-weight: 700;
+  color: var(--synapse); line-height: 1;
+  display: flex; align-items: baseline; gap: 10px;
+}
+
+.home-card-unidade {
+  font-family: "Figtree", sans-serif; font-size: 1rem; font-weight: 400;
+  color: var(--muted);
+}
+
+.home-card-dia .cta { margin-top: 18px }
+
+.home-tudo-em-dia {
+  margin-top: 16px; padding: 14px 16px; border-radius: var(--radius-sm);
+  border: 1px solid rgba(52,211,153,.3); background: rgba(52,211,153,.07);
+  color: var(--ok-ink); font-size: .95rem; text-align: center;
+}
+
+.home-pulsos {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+
+.home-pulso {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.home-pulso-val {
+  font-family: "Sora", sans-serif; font-weight: 700; font-size: 1.3rem;
+  color: var(--ink); line-height: 1;
+}
+
+.home-pulso-rot {
+  font-size: .72rem; color: var(--muted); line-height: 1.3;
+}
+
+.home-atalhos {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+
+.home-atalhos .ghost { margin-top: 0; min-height: 44px }
+
+@media (max-width: 420px) {
+  .home-pulsos { grid-template-columns: 1fr }
+}

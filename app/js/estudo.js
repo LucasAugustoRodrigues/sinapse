@@ -1,7 +1,7 @@
 // estudo.js — camada de domínio: sessão de estudo.
 // Liga renderCard (ui.js) ao motor (srs.js) e ao repositório (dados.js).
 
-import { construirFila, revisar, estadoInicial, config, forcaHabilidade, dominio } from './srs.js';
+import { construirFila, revisar, estadoInicial, config, forcaHabilidade, dominio, contarNovasHoje } from './srs.js';
 import { carregarQuestoes, lerTodoProgresso, salvarProgresso } from './dados.js';
 
 // ============================================================================
@@ -108,7 +108,9 @@ export async function contarRevisao(filtros = {}) {
   ]);
   const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
   const mapaCards = _montarCards(questoesFiltradas, progresso);
-  return construirFila(Object.values(mapaCards), hojeEmDias(), config, filtros).length;
+  const hoje = hojeEmDias();
+  const novasHoje = contarNovasHoje(Object.values(progresso), hoje);
+  return construirFila(Object.values(mapaCards), hoje, config, { ...filtros, novasHoje }).length;
 }
 
 // ============================================================================
@@ -190,8 +192,10 @@ export async function resumoInicio(filtros = { idioma: 'ingles' }) {
 
   const mapa = _montarMapa(cards);
 
+  const novasHoje = contarNovasHoje(Object.values(progresso), hoje);
+
   return {
-    revisaoHoje:    construirFila(cards, hoje, config, filtros).length,
+    revisaoHoje:    construirFila(cards, hoje, config, { ...filtros, novasHoje }).length,
     dominadas:      mapa.filter(e => e.dominio >= 0.8).length,
     total:          mapa.length,
     streak:         _streak(diasComRevisao, hoje),
@@ -217,7 +221,9 @@ export async function iniciarSessao(filtros = {}) {
   const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
   const questoesById = new Map(questoesFiltradas.map(q => [q.id, q]));
   const mapaCards   = _montarCards(questoesFiltradas, progresso);
-  let fila          = construirFila(Object.values(mapaCards), hojeEmDias(), config, filtros);
+  const hoje        = hojeEmDias();
+  const novasHoje   = contarNovasHoje(Object.values(progresso), hoje);
+  let fila          = construirFila(Object.values(mapaCards), hoje, config, { ...filtros, novasHoje });
 
   const total = fila.length;  // tamanho original — não cresce com reinserções na contagem
   let indice                = 0;

@@ -4,7 +4,7 @@ import {
   CHUTEI, DUVIDA, CERTEZA,
   config,
   derivarNota, pior, estadoInicial, revisar,
-  construirFila, forcaHabilidade, dominio,
+  construirFila, forcaHabilidade, dominio, contarNovasHoje,
 } from "./srs.js";
 
 // ============================================================================
@@ -257,6 +257,39 @@ describe("reaprendendo que acerta", () => {
 });
 
 // ============================================================================
+// contarNovasHoje (§7.6)
+// ============================================================================
+
+describe("contarNovasHoje", () => {
+  const hoje = 50;
+
+  test("card sem histórico → não conta", () => {
+    const cards = [{ historico: [] }];
+    expect(contarNovasHoje(cards, hoje)).toBe(0);
+  });
+
+  test("card com primeira revisão hoje → conta", () => {
+    const cards = [{ historico: [{ data: hoje }] }];
+    expect(contarNovasHoje(cards, hoje)).toBe(1);
+  });
+
+  test("card com primeira revisão ontem e outra hoje → não conta (só historico[0] importa)", () => {
+    const cards = [{ historico: [{ data: hoje - 1 }, { data: hoje }] }];
+    expect(contarNovasHoje(cards, hoje)).toBe(0);
+  });
+
+  test("mix: 2 iniciados hoje, 1 iniciado ontem, 1 sem histórico → 2", () => {
+    const cards = [
+      { historico: [{ data: hoje }] },
+      { historico: [{ data: hoje }] },
+      { historico: [{ data: hoje - 1 }] },
+      { historico: [] },
+    ];
+    expect(contarNovasHoje(cards, hoje)).toBe(2);
+  });
+});
+
+// ============================================================================
 // construirFila — ordem dos grupos com rng determinístico (§7.6)
 // ============================================================================
 
@@ -344,6 +377,52 @@ describe("construirFila", () => {
     const f = construirFila([cA, cB], hoje, config, { rng: rng0 });
     expect(f[0].cardId).toBe("b");
     expect(f[1].cardId).toBe("a");
+  });
+
+  test("25 novos + 5 iniciados hoje (novasPorDia=20) → grupo de novos tem 15", () => {
+    // Os 5 iniciados têm historico[0].data === hoje → contarNovasHoje = 5 → limite = 15
+    // proximaRevisao no futuro: não aparecem nos outros grupos
+    const hojeLocal = 50;
+    const novos = Array.from({ length: 25 }, (_, i) => ({
+      cardId: `n${i}`, estado: "novo",
+      proximaRevisao: 0, flagRevisar: false, habilidade: 1, historico: [],
+    }));
+    const iniciados = Array.from({ length: 5 }, (_, i) => ({
+      cardId: `i${i}`, estado: "revisao",
+      proximaRevisao: hojeLocal + 10,
+      flagRevisar: false, habilidade: 1,
+      historico: [{ data: hojeLocal, notaRec: BOM }],
+    }));
+    const f = construirFila([...novos, ...iniciados], hojeLocal, config, { rng });
+    expect(f.filter(c => c.estado === "novo")).toHaveLength(15);
+    expect(f).toHaveLength(15); // iniciados não vencem
+  });
+
+  test("20 já iniciados hoje (novasPorDia=20) → 0 novos na fila", () => {
+    const hojeLocal = 50;
+    const novos = Array.from({ length: 10 }, (_, i) => ({
+      cardId: `n${i}`, estado: "novo",
+      proximaRevisao: 0, flagRevisar: false, habilidade: 1, historico: [],
+    }));
+    const iniciados = Array.from({ length: 20 }, (_, i) => ({
+      cardId: `i${i}`, estado: "revisao",
+      proximaRevisao: hojeLocal + 10,
+      flagRevisar: false, habilidade: 1,
+      historico: [{ data: hojeLocal, notaRec: BOM }],
+    }));
+    const f = construirFila([...novos, ...iniciados], hojeLocal, config, { rng });
+    expect(f.filter(c => c.estado === "novo")).toHaveLength(0);
+  });
+
+  test("filtros.novasHoje explícito se sobrepõe à contagem automática", () => {
+    // Sem cards iniciados hoje, mas novasHoje=10 passado explicitamente → limite=10
+    const hojeLocal = 50;
+    const novos = Array.from({ length: 25 }, (_, i) => ({
+      cardId: `n${i}`, estado: "novo",
+      proximaRevisao: 0, flagRevisar: false, habilidade: 1, historico: [],
+    }));
+    const f = construirFila(novos, hojeLocal, config, { rng, novasHoje: 10 });
+    expect(f.filter(c => c.estado === "novo")).toHaveLength(10);
   });
 });
 

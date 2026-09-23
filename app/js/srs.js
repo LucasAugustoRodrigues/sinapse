@@ -206,6 +206,15 @@ export function revisar(card, resultado, hoje, cfg = config) {
 }
 
 // ============================================================================
+// contarNovasHoje — quantos cards tiveram a primeira revisão hoje (§7.6)
+// ============================================================================
+
+/** Retorna quantos cards têm a primeira entrada do histórico com data === hoje. */
+export function contarNovasHoje(cards, hoje) {
+  return cards.filter(c => c.historico[0]?.data === hoje).length;
+}
+
+// ============================================================================
 // construirFila — fila do dia (§7.6)
 // ============================================================================
 
@@ -248,11 +257,13 @@ export function construirFila(cards, hoje, cfg = config, filtros = {}) {
     rng
   );
 
-  // Grupo 3: novos até novasPorDia, priorizando habilidades fracas
+  // Grupo 3: novos respeitando o limite diário global
+  const novasHoje = filtros.novasHoje ?? contarNovasHoje(cards, hoje);
+  const limite    = Math.max(0, cfg.novasPorDia - novasHoje);
   const novos = cards
     .filter((c) => c.estado === "novo" && filtrar(c))
     .sort((a, b) => _getForca(a.habilidade) - _getForca(b.habilidade))
-    .slice(0, cfg.novasPorDia);
+    .slice(0, limite);
   const grupo3 = _shuffleCopia(novos, rng);
 
   return [...grupo1, ...grupo2, ...grupo3];

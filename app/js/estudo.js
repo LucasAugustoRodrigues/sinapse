@@ -1,7 +1,7 @@
 // estudo.js — camada de domínio: sessão de estudo.
 // Liga renderCard (ui.js) ao motor (srs.js) e ao repositório (dados.js).
 
-import { construirFila, revisar, estadoInicial, config } from './srs.js';
+import { construirFila, revisar, estadoInicial, config, forcaHabilidade, dominio } from './srs.js';
 import { carregarQuestoes, lerTodoProgresso, salvarProgresso } from './dados.js';
 
 // ============================================================================
@@ -104,6 +104,42 @@ export async function contarRevisao(filtros = {}) {
   const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
   const mapaCards = _montarCards(questoesFiltradas, progresso);
   return construirFila(Object.values(mapaCards), hojeEmDias(), config, filtros).length;
+}
+
+// ============================================================================
+// _montarMapa — dados da tela Progresso ("mapa do cérebro")
+// ============================================================================
+
+/**
+ * Recebe o array de cards e devolve, por habilidade presente,
+ * { habilidade, forca, dominio, questoes, tentativas }, ordenado crescente.
+ */
+export function _montarMapa(cards) {
+  const habilidades = [...new Set(cards.map(c => c.habilidade))].sort((a, b) => a - b);
+  return habilidades.map(h => {
+    const cardsH = cards.filter(c => c.habilidade === h);
+    return {
+      habilidade: h,
+      forca:      forcaHabilidade(cards, h),
+      dominio:    dominio(cards, h),
+      questoes:   cardsH.length,
+      tentativas: cardsH.reduce((sum, c) => sum + c.historico.length, 0),
+    };
+  });
+}
+
+/**
+ * Carrega questões + progresso, aplica filtros e devolve o mapa de habilidades.
+ * Default idioma "ingles" — coerente com a sessão de revisão.
+ */
+export async function mapaCerebro(filtros = { idioma: 'ingles' }) {
+  const [questoes, progresso] = await Promise.all([
+    carregarQuestoes(),
+    lerTodoProgresso(),
+  ]);
+  const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
+  const mapaCards = _montarCards(questoesFiltradas, progresso);
+  return _montarMapa(Object.values(mapaCards));
 }
 
 // ============================================================================

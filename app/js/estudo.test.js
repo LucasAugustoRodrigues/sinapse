@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { describe, test, expect } from 'vitest';
-import { _reenfileirar, _montarCards, _filtrarQuestoes } from './estudo.js';
-import { estadoInicial } from './srs.js';
+import { _reenfileirar, _montarCards, _filtrarQuestoes, _montarMapa } from './estudo.js';
+import { estadoInicial, BOM } from './srs.js';
 
 // ============================================================================
 // Fixtures
@@ -122,6 +122,55 @@ describe('_reenfileirar', () => {
     expect(nova).toHaveLength(4);
     expect(nova[2]).toBe(A);
     expect(nova[1]).toBe(B);
+  });
+});
+
+// ============================================================================
+// _montarMapa
+// ============================================================================
+
+describe('_montarMapa', () => {
+  const card = (habilidade, historico = [], estado = 'novo', intervalo = 0) =>
+    ({ habilidade, estado, intervalo, historico });
+
+  test('devolve uma entrada por habilidade presente, ordenadas crescente', () => {
+    const cards = [card(3), card(1), card(2), card(1)];
+    const mapa  = _montarMapa(cards);
+    expect(mapa).toHaveLength(3);
+    expect(mapa.map(e => e.habilidade)).toEqual([1, 2, 3]);
+  });
+
+  test('card sem histórico → forca null, tentativas 0, dominio é número', () => {
+    const [entrada] = _montarMapa([card(5)]);
+    expect(entrada.forca).toBeNull();
+    expect(entrada.tentativas).toBe(0);
+    expect(typeof entrada.dominio).toBe('number');
+  });
+
+  test('habilidade com < 5 tentativas → forca null', () => {
+    const hist4 = Array.from({ length: 4 }, (_, i) => ({ data: i, notaRec: BOM }));
+    const [entrada] = _montarMapa([card(7, hist4, 'revisao', 5)]);
+    expect(entrada.forca).toBeNull();
+  });
+
+  test('≥ 5 acertos BOM + estado revisao + intervalo 10 → forca > 0.9 e dominio > 0.5', () => {
+    const hist6 = Array.from({ length: 6 }, (_, i) => ({ data: i, notaRec: BOM }));
+    const [entrada] = _montarMapa([card(8, hist6, 'revisao', 10)]);
+    expect(entrada.forca).toBeGreaterThan(0.9);
+    expect(entrada.dominio).toBeGreaterThan(0.5);
+  });
+
+  test('questoes conta os cards da habilidade; tentativas soma historico.length', () => {
+    const cards = [
+      card(5, [{ data: 0, notaRec: BOM }]),
+      card(5, [{ data: 1, notaRec: BOM }, { data: 2, notaRec: BOM }]),
+      card(6),
+    ];
+    const [h5, h6] = _montarMapa(cards);
+    expect(h5.questoes).toBe(2);
+    expect(h5.tentativas).toBe(3);
+    expect(h6.questoes).toBe(1);
+    expect(h6.tentativas).toBe(0);
   });
 });
 

@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, test, expect } from 'vitest';
-import { _reenfileirar, _montarCards, _filtrarQuestoes, _montarMapa } from './estudo.js';
+import { _reenfileirar, _montarCards, _filtrarQuestoes, _montarMapa, _streak, _diaLocal } from './estudo.js';
 import { estadoInicial, BOM } from './srs.js';
 
 // ============================================================================
@@ -171,6 +171,65 @@ describe('_montarMapa', () => {
     expect(h5.tentativas).toBe(3);
     expect(h6.questoes).toBe(1);
     expect(h6.tentativas).toBe(0);
+  });
+});
+
+// ============================================================================
+// _diaLocal
+// ============================================================================
+
+describe('_diaLocal', () => {
+  const BRT = 180; // Brasília UTC-3
+
+  test('09:00 e 20:30 locais do mesmo dia são o mesmo dia (BRT)', () => {
+    const ms0900 = Date.UTC(2024, 8, 23, 12,  0); // 23/09 12:00Z = 09:00 BRT
+    const ms2030 = Date.UTC(2024, 8, 23, 23, 30); // 23/09 23:30Z = 20:30 BRT
+    expect(_diaLocal(ms0900, BRT)).toBe(_diaLocal(ms2030, BRT));
+  });
+
+  test('23:00 local (02:00Z do dia seguinte) é o mesmo dia que 09:00 local — o bug UTC', () => {
+    const ms0900 = Date.UTC(2024, 8, 23, 12,  0); // 09:00 BRT dia 23
+    const ms2300 = Date.UTC(2024, 8, 24,  2,  0); // 02:00Z dia 24 = 23:00 BRT dia 23
+    expect(_diaLocal(ms2300, BRT)).toBe(_diaLocal(ms0900, BRT));
+  });
+
+  test('00:30 local do dia 24 é o dia seguinte a 09:00 local do dia 23 (BRT)', () => {
+    const ms0900 = Date.UTC(2024, 8, 23, 12,  0); // 09:00 BRT dia 23
+    const ms0030 = Date.UTC(2024, 8, 24,  3, 30); // 03:30Z dia 24 = 00:30 BRT dia 24
+    expect(_diaLocal(ms0030, BRT)).toBe(_diaLocal(ms0900, BRT) + 1);
+  });
+
+  test('offsetMin=0 equivale a Math.floor(ms/86400000)', () => {
+    const ms = Date.UTC(2024, 8, 23, 15, 0);
+    expect(_diaLocal(ms, 0)).toBe(Math.floor(ms / 86400000));
+  });
+});
+
+// ============================================================================
+// _streak
+// ============================================================================
+
+describe('_streak', () => {
+  const hoje = 1000; // dia fixo para os testes
+
+  test('hoje + 2 dias anteriores consecutivos → 3', () => {
+    expect(_streak(new Set([hoje, hoje - 1, hoje - 2]), hoje)).toBe(3);
+  });
+
+  test('nada hoje, ontem + anteontem → 2 (streak vivo)', () => {
+    expect(_streak(new Set([hoje - 1, hoje - 2]), hoje)).toBe(2);
+  });
+
+  test('set vazio → 0', () => {
+    expect(_streak(new Set([]), hoje)).toBe(0);
+  });
+
+  test('hoje e anteontem (buraco ontem) → 1', () => {
+    expect(_streak(new Set([hoje, hoje - 2]), hoje)).toBe(1);
+  });
+
+  test('parou anteontem (hoje-2 e hoje-3, nada hoje nem ontem) → 0', () => {
+    expect(_streak(new Set([hoje - 2, hoje - 3]), hoje)).toBe(0);
   });
 });
 

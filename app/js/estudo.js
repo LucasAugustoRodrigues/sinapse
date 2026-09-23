@@ -33,9 +33,14 @@ function _anoFonte(fonte) {
 // Funções puras exportadas (testáveis sem IO)
 // ============================================================================
 
-/** Dias inteiros desde a epoch Unix (UTC). Única conversão Date↔dia do app. */
+/** Converte ms epoch para número de dia no fuso local (offsetMin = Date.getTimezoneOffset()). */
+export function _diaLocal(ms, offsetMin) {
+  return Math.floor((ms - offsetMin * 60000) / 86400000);
+}
+
+/** Dia local atual. Corrige o bug UTC que virava o dia às 21h em Brasília. */
 export function hojeEmDias() {
-  return Math.floor(Date.now() / 86400000);
+  return _diaLocal(Date.now(), new Date().getTimezoneOffset());
 }
 
 /**
@@ -140,6 +145,58 @@ export async function mapaCerebro(filtros = { idioma: 'ingles' }) {
   const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
   const mapaCards = _montarCards(questoesFiltradas, progresso);
   return _montarMapa(Object.values(mapaCards));
+}
+
+// ============================================================================
+// _streak e resumoInicio — dados da tela Início ("pulsos")
+// ============================================================================
+
+/**
+ * Conta dias de revisão consecutivos terminando em hoje.
+ * Se hoje ainda não tem revisão, o streak continua vivo a partir de ontem.
+ */
+export function _streak(diasComRevisao, hoje) {
+  let dia = diasComRevisao.has(hoje) ? hoje : hoje - 1;
+  let count = 0;
+  while (diasComRevisao.has(dia)) {
+    count++;
+    dia--;
+  }
+  return count;
+}
+
+/**
+ * Carrega questões + progresso e devolve os "pulsos" da tela Início:
+ * revisaoHoje, dominadas, total, streak, questoesSemana.
+ */
+export async function resumoInicio(filtros = { idioma: 'ingles' }) {
+  const [questoes, progresso] = await Promise.all([
+    carregarQuestoes(),
+    lerTodoProgresso(),
+  ]);
+  const questoesFiltradas = _filtrarQuestoes(questoes, filtros);
+  const mapaCards = _montarCards(questoesFiltradas, progresso);
+  const cards = Object.values(mapaCards);
+  const hoje = hojeEmDias();
+
+  const diasComRevisao = new Set();
+  let questoesSemana = 0;
+  for (const card of cards) {
+    for (const entrada of card.historico) {
+      diasComRevisao.add(entrada.data);
+      if (entrada.data >= hoje - 6) questoesSemana++;
+    }
+  }
+
+  const mapa = _montarMapa(cards);
+
+  return {
+    revisaoHoje:    construirFila(cards, hoje, config, filtros).length,
+    dominadas:      mapa.filter(e => e.dominio >= 0.8).length,
+    total:          mapa.length,
+    streak:         _streak(diasComRevisao, hoje),
+    questoesSemana,
+  };
 }
 
 // ============================================================================

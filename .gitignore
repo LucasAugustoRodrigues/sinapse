@@ -22,6 +22,9 @@ app/public/
 .agents/
 .claude/
 
+# Perfil pessoal local (não vai ao repo)
+app/js/perfil.local.js
+
 # Sistema / editor
 .DS_Store
 Thumbs.db

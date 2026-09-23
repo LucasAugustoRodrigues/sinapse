@@ -535,11 +535,28 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   âmbar 0.5–0.8 · apagada <0.5 · cinza sem dados), detalhe ao tocar, legenda e contagem de
   acesas. **87 testes verdes.**
 
+- **Tela Início + perfil (23/09)** — a home virou o **centro da navegação**: saudação por horário
+  com o nome dela ("Boa noite, …!") + **frase do dia** (`perfil.js`; o nome mora em
+  `perfil.local.js`, **fora do git** — o repo é público), card "Revisão de hoje — N questões" e
+  os 3 pulsos (**dominadas**, **dias seguidos**, **questões na semana**) via `resumoInicio()`.
+  Seleção, mapa e fim de sessão voltam pra ela.
+- **Correções do dia (23/09)**:
+  - **Dia local em vez de UTC** — o "dia" do app virava às 21h (Brasília); agora vira à
+    meia-noite do tablet (`_diaLocal`). Afetava streak, semana e o agendamento do SRS.
+  - **`novasPorDia` virou limite diário global** — antes, cada fila montada trazia 20 novas de
+    novo e a revisão do dia nunca terminava (`contarNovasHoje`).
+  - **Sair da sessão sem perder resposta** — botão com seta curvada; se ela já respondeu (está na
+    revelação), a resposta é salva antes de sair. Botão **voltar unificado** no canto superior
+    direito (card, mapa, seleção).
+  - Cabeçalho do card opaco (texto não passa mais atrás do trilho); neurônio **fraca** em rosado
+    (antes indistinguível do cinza "a treinar"); detalhe do mapa mostra "—" em vez de "30%" em
+    habilidade nunca treinada. **119 testes verdes.**
+
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **App PWA** — coração + **mapa do cérebro** prontos; próximo: home/saudação e o **PWA** em si
-  (service worker + manifest → offline/instalável no tablet).
+- **App PWA** — coração, mapa do cérebro e tela Início prontos; próximo: **timer por questão**,
+  depois o **PWA** em si (service worker + manifest → offline/instalável no tablet).
 
 ### 📋 A fazer
 
@@ -548,13 +565,20 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
       Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
       + relatório do que precisa de olho humano.
-- [ ] **App PWA — home/saudação** — card do dia ("Revisão de hoje — N questões") + pulsos
-      (habilidades dominadas, streak de dias, questões na semana); atalhos p/ revisão e progresso.
+- [ ] **Timer por questão** — cronômetro no cabeçalho do card (ao lado do "TREINO"), com botão
+      pra esconder (ansiedade) e preferência lembrada; **grava sempre**, mesmo escondido. Mede do
+      card aparecer até "Confirmar resposta" (revelação fora); **pausa** quando ela sai do app.
+      Tempo salvo no histórico de cada revisão; fim de sessão com total, média e a mais demorada;
+      referência ENEM (~3 min/questão) só no resumo, nunca durante.
+- [ ] **Reflow do enunciado** — o texto mantém as quebras de linha da coluna do PDF e ocupa só
+      metade do card; juntar linhas do mesmo parágrafo (na fábrica ou na exibição).
+- [ ] **Frases do dia reais** — ir trocando/acrescentando citações em `perfil.js` (`{ texto, autor }`),
+      sempre com a **fonte conferida** (muita frase da internet tem autoria falsa).
 - [ ] **PWA de verdade** — service worker + manifest → **offline e instalável no tablet dela**.
 - [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
       (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
-- [ ] **(Opcional)** mockup navegável das telas; saudação personalizada com o nome dela.
+- [ ] **(Opcional)** mockup navegável das telas.
 
 ---
 

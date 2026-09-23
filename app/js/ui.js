@@ -55,6 +55,11 @@ const SVG = {
     `<circle cx="19" cy="9" r="2.8" fill="var(--signal)" opacity=".85"/>` +
     `<circle cx="14" cy="19" r="3.5" fill="var(--signal)" opacity=".85"/>` +
     `</svg>`,
+
+  voltar:
+    `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+    `<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>` +
+    `</svg>`,
 };
 
 // ============================================================================
@@ -144,7 +149,7 @@ function _buildEnunBloco(questao, isReconhecer) {
 // renderCard — constrói o card de uma questão e notifica via callback
 // ============================================================================
 
-export function renderCard(container, { questao, matriz, habilidadeCorreta }, { onConcluir }) {
+export function renderCard(container, { questao, matriz, habilidadeCorreta }, { onConcluir, onSair }) {
   // Constrói o HTML completo no container
   container.innerHTML =
     `<div class="sinapse-app">` +
@@ -153,6 +158,7 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
           _LOGO_SVG +
           `<h1>Sinapse</h1>` +
           `<span class="tag">Treino</span>` +
+          `<button class="btn-voltar" aria-label="Voltar ao início" title="Voltar ao início" id="sairBtn">${SVG.voltar}</button>` +
         `</div>` +
         `<div class="rail" id="rail">` +
           `<div class="seg" data-step="0"><div class="track"><i></i></div><span class="lbl">Reconhecer</span></div>` +
@@ -411,6 +417,14 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
     if (!img.complete) img.addEventListener('load', atualizarAltura, { once: true });
   });
 
+  // Botão sair — passa resultado se já estiver na revelação, null antes disso
+  container.querySelector('#sairBtn').addEventListener('click', () => {
+    if (step < 2) { onSair?.(null); return; }
+    const recAcerto = selHab === questao.habilidade;
+    const resAcerto = selAlt === questao.gabarito;
+    onSair?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto });
+  });
+
   irPara(0);
 }
 
@@ -525,7 +539,10 @@ async function renderSelecao(app) {
           `<h1>Sinapse</h1>` +
         `</div>` +
 
-        `<h2 class="sel-titulo">Revisão do dia</h2>` +
+        `<div class="tela-titulo-row">` +
+          `<h2 class="sel-titulo">Revisão do dia</h2>` +
+          `<button class="btn-voltar" aria-label="Voltar ao início" title="Voltar ao início" id="voltarHomeBtn">${SVG.voltar}</button>` +
+        `</div>` +
         `<p class="sel-sub">Escolha o que treinar hoje.</p>` +
 
         `<div class="sel-section">` +
@@ -557,7 +574,6 @@ async function renderSelecao(app) {
         `</div>` +
 
         `<button class="cta" id="comecarBtn" disabled>Começar revisão</button>` +
-        `<button class="ghost" id="voltarHomeBtn">← Início</button>` +
 
       `</div>` +
     `</div>`;
@@ -671,6 +687,10 @@ async function iniciarRevisao(app, filtros) {
         await sessao.registrar({ recAcerto, recConfianca: confianca, resAcerto });
         await mostrarAtual();
       },
+      onSair: async (res) => {
+        if (res) await sessao.registrar({ recAcerto: res.recAcerto, recConfianca: res.confianca, resAcerto: res.resAcerto });
+        renderHome(app);
+      },
     });
   }
 
@@ -734,7 +754,10 @@ async function renderProgresso(app) {
     `<div class="sinapse-app">` +
       `<div class="progresso">` +
 
-        `<h2 class="prog-titulo">Mapa do cérebro</h2>` +
+        `<div class="tela-titulo-row">` +
+          `<h2 class="prog-titulo">Mapa do cérebro</h2>` +
+          `<button class="btn-voltar" aria-label="Voltar ao início" title="Voltar ao início" id="voltarProgBtn">${SVG.voltar}</button>` +
+        `</div>` +
         `<p class="prog-sub">Suas habilidades, acesas pelo treino.</p>` +
         `<p class="prog-count"><strong>${acesas}</strong> de ${total} habilidades acesas</p>` +
 
@@ -750,8 +773,6 @@ async function renderProgresso(app) {
           `<div class="leg-item"><div class="leg-dot leg-dot--fraca"></div><span class="leg-label">Fraca (&lt;50%)</span></div>` +
           `<div class="leg-item"><div class="leg-dot leg-dot--vazia"></div><span class="leg-label">A treinar</span></div>` +
         `</div>` +
-
-        `<button class="ghost" id="voltarProgBtn">← Voltar</button>` +
 
       `</div>` +
     `</div>`;

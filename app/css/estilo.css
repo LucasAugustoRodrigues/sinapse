@@ -51,8 +51,16 @@ body {
    ============================================================ */
 .bar {
   position: sticky; top: 0; z-index: 20;
-  background: linear-gradient(180deg, var(--bg) 62%, rgba(11,12,22,0));
-  padding: 16px 0 10px;
+  background: var(--bg);
+  padding: 16px 0 12px;
+}
+/* Esmaecimento acontece *abaixo* dos rótulos — o .bar em si é sólido */
+.bar::after {
+  content: '';
+  position: absolute; left: 0; right: 0;
+  top: 100%; height: 22px;
+  background: linear-gradient(180deg, var(--bg), transparent);
+  pointer-events: none;
 }
 
 .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 14px }
@@ -67,6 +75,17 @@ body {
   text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted2);
   border: 1px solid var(--line); border-radius: 999px; padding: 4px 9px;
 }
+.btn-voltar {
+  appearance: none; background: transparent; border: none; cursor: pointer;
+  color: var(--muted); flex: 0 0 44px;
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, background .15s;
+}
+.btn-voltar:hover, .btn-voltar:focus-visible {
+  color: var(--synapse); background: rgba(139,123,245,.10);
+}
+.btn-voltar:active { transform: scale(.9) }
 
 .rail { display: flex; gap: 8px }
 .rail .seg { flex: 1; display: flex; flex-direction: column; gap: 6px }
@@ -378,9 +397,15 @@ body {
   font-family: "Sora", sans-serif; font-weight: 700; font-size: 1.28rem;
   margin: 0; letter-spacing: .2px;
 }
+.tela-titulo-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.tela-titulo-row .btn-voltar { flex: 0 0 44px; margin-left: 8px }
+
 .sel-titulo {
   font-family: "Sora", sans-serif; font-size: 1.65rem; font-weight: 700;
-  margin: 0 0 6px; color: var(--ink); letter-spacing: -.2px;
+  margin: 0; color: var(--ink); letter-spacing: -.2px;
 }
 .sel-sub { color: var(--muted); font-size: .95rem; margin: 0 0 32px }
 
@@ -445,7 +470,7 @@ body {
 }
 .prog-titulo {
   font-family: "Sora", sans-serif; font-size: 1.65rem; font-weight: 700;
-  margin: 0 0 4px; color: var(--ink); letter-spacing: -.2px;
+  margin: 0; color: var(--ink); letter-spacing: -.2px;
 }
 .prog-sub  { color: var(--muted); font-size: .95rem; margin: 0 0 8px }
 .prog-count {
@@ -493,9 +518,9 @@ body {
   color: #fde68a;
 }
 .neuron--fraca {
-  background: rgba(139,123,245,.11);
-  border-color: var(--line2);
-  color: var(--muted);
+  background: rgba(251,113,133,.10);
+  border-color: rgba(251,113,133,.45);
+  color: var(--err-ink);
 }
 .neuron--vazia {
   background: var(--panel);
@@ -558,7 +583,7 @@ body {
 }
 .leg-dot--forte { background: var(--ok); box-shadow: 0 0 5px rgba(52,211,153,.4) }
 .leg-dot--media { background: var(--warn) }
-.leg-dot--fraca { background: var(--line2) }
+.leg-dot--fraca { background: rgba(251,113,133,.55) }
 .leg-dot--vazia { background: var(--panel); border-color: var(--line2) }
 .leg-label { color: var(--muted) }
 

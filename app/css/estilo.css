@@ -438,6 +438,131 @@ body {
 }
 
 /* ============================================================
+   Tela de progresso — Mapa do cérebro
+   ============================================================ */
+.progresso {
+  padding: 32px 0 56px;
+}
+.prog-titulo {
+  font-family: "Sora", sans-serif; font-size: 1.65rem; font-weight: 700;
+  margin: 0 0 4px; color: var(--ink); letter-spacing: -.2px;
+}
+.prog-sub  { color: var(--muted); font-size: .95rem; margin: 0 0 8px }
+.prog-count {
+  font-family: "Sora", sans-serif; font-size: .9rem; color: var(--muted);
+  margin: 0 0 24px;
+}
+.prog-count strong { color: var(--ok); font-size: 1.1rem }
+
+/* Grupos de competência */
+.prog-comp { margin-bottom: 26px }
+.prog-comp-nome {
+  font-family: "Sora", sans-serif; color: var(--signal); font-size: .7rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: .7px;
+  margin: 0 0 10px;
+}
+
+/* Grade de neurônios */
+.neuron-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 8px;
+}
+.neuron {
+  appearance: none; cursor: pointer;
+  aspect-ratio: 1; min-height: 44px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-family: "Sora", sans-serif; font-weight: 700; font-size: .85rem;
+  transition: transform .12s, box-shadow .15s;
+  border: 1.5px solid transparent;
+}
+.neuron:hover  { transform: scale(1.07) }
+.neuron:active { transform: scale(.93) }
+
+/* Bandas de domínio */
+.neuron--forte {
+  background: rgba(52,211,153,.18);
+  border-color: var(--ok);
+  color: var(--ok-ink);
+  box-shadow: 0 0 10px rgba(52,211,153,.22);
+}
+.neuron--media {
+  background: rgba(251,191,92,.13);
+  border-color: var(--warn);
+  color: #fde68a;
+}
+.neuron--fraca {
+  background: rgba(139,123,245,.11);
+  border-color: var(--line2);
+  color: var(--muted);
+}
+.neuron--vazia {
+  background: var(--panel);
+  border-color: var(--line);
+  color: var(--muted2);
+}
+.neuron.ativo {
+  outline: 2px solid var(--synapse);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(139,123,245,.28);
+}
+
+/* Painel de detalhe do neurônio selecionado */
+.neuron-detail {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 28px;
+  min-height: 72px;
+  display: flex; align-items: center;
+}
+.neuron-detail-placeholder {
+  color: var(--muted2); font-size: .88rem;
+  font-family: "Sora", sans-serif;
+}
+.neuron-detail-content { width: 100% }
+.nd-code {
+  font-family: "Sora", sans-serif; font-weight: 700; font-size: 1rem;
+  color: var(--synapse); margin-bottom: 6px;
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+}
+.nd-comp-nome {
+  color: var(--muted2); font-size: .78rem; font-weight: 400;
+}
+.nd-desc {
+  font-size: .93rem; color: #f2f1ff; line-height: 1.5; margin-bottom: 12px;
+}
+.nd-stats {
+  display: flex; flex-wrap: wrap; gap: 8px 20px;
+  font-family: "Sora", sans-serif;
+}
+.nd-stat-item { display: flex; flex-direction: column; gap: 1px }
+.nd-stat-label {
+  color: var(--muted2); font-size: .65rem;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.nd-stat-val { color: var(--ink); font-weight: 600; font-size: .9rem }
+
+/* Legenda */
+.neuron-legenda {
+  display: flex; flex-wrap: wrap; gap: 6px 16px;
+  margin: 0 0 28px;
+  font-family: "Sora", sans-serif; font-size: .78rem;
+}
+.leg-item { display: flex; align-items: center; gap: 6px }
+.leg-dot {
+  width: 12px; height: 12px; border-radius: 4px; flex: 0 0 12px;
+  border: 1px solid transparent;
+}
+.leg-dot--forte { background: var(--ok); box-shadow: 0 0 5px rgba(52,211,153,.4) }
+.leg-dot--media { background: var(--warn) }
+.leg-dot--fraca { background: var(--line2) }
+.leg-dot--vazia { background: var(--panel); border-color: var(--line2) }
+.leg-label { color: var(--muted) }
+
+/* ============================================================
    Acessibilidade + reduced motion
    ============================================================ */
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px }

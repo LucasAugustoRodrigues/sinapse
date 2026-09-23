@@ -3,7 +3,7 @@
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
 import { carregarMatriz, descreverHabilidade } from './dados.js';
-import { iniciarSessao, listarSimulados, contarRevisao } from './estudo.js';
+import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro } from './estudo.js';
 
 // ============================================================================
 // Ícones SVG (substituem emoji — render idêntico em qualquer tablet)
@@ -472,6 +472,7 @@ async function renderSelecao(app) {
         `</div>` +
 
         `<button class="cta" id="comecarBtn" disabled>Começar revisão</button>` +
+        `<button class="ghost" id="progressoBtn">Ver meu progresso</button>` +
 
       `</div>` +
     `</div>`;
@@ -537,6 +538,8 @@ async function renderSelecao(app) {
     iniciarRevisao(app, _getFiltros());
   });
 
+  app.querySelector('#progressoBtn').addEventListener('click', () => renderProgresso(app));
+
   recalcular();  // contagem inicial
 }
 
@@ -587,6 +590,134 @@ async function iniciarRevisao(app, filtros) {
   }
 
   await mostrarAtual();
+}
+
+// ============================================================================
+// Tela de progresso — Mapa do cérebro
+// ============================================================================
+
+async function renderProgresso(app) {
+  let matriz, stats;
+  try {
+    [matriz, stats] = await Promise.all([carregarMatriz(), mapaCerebro()]);
+  } catch (e) {
+    app.innerHTML =
+      `<div class="loading-state">` +
+        `<p>Não foi possível carregar o mapa de progresso.</p>` +
+      `</div>`;
+    console.error('[Sinapse] renderProgresso error:', e);
+    return;
+  }
+
+  const statMap = new Map(stats.map(s => [s.habilidade, s]));
+
+  let acesas = 0;
+  for (const s of stats) {
+    if (s.tentativas > 0 && s.dominio >= 0.5) acesas++;
+  }
+  const total = stats.length;
+
+  function _bandaClass(stat) {
+    if (stat.tentativas === 0) return 'neuron--vazia';
+    if (stat.dominio >= 0.8)   return 'neuron--forte';
+    if (stat.dominio >= 0.5)   return 'neuron--media';
+    return 'neuron--fraca';
+  }
+
+  const habInfo = new Map();
+  let compHtml = '';
+  for (const comp of matriz.competencias) {
+    for (const h of comp.habilidades) {
+      habInfo.set(h.numero, { descricao: h.descricao, compNome: comp.nome });
+    }
+    const habs = comp.habilidades.filter(h => statMap.has(h.numero));
+    if (!habs.length) continue;
+
+    compHtml +=
+      `<div class="prog-comp">` +
+        `<div class="prog-comp-nome">${_esc(String(comp.numero))} · ${_esc(comp.nome)}</div>` +
+        `<div class="neuron-grid">` +
+          habs.map(h => {
+            const s = statMap.get(h.numero);
+            return `<button class="neuron ${_bandaClass(s)}" data-hab="${h.numero}" type="button">H${h.numero}</button>`;
+          }).join('') +
+        `</div>` +
+      `</div>`;
+  }
+
+  app.innerHTML =
+    `<div class="sinapse-app">` +
+      `<div class="progresso">` +
+
+        `<h2 class="prog-titulo">Mapa do cérebro</h2>` +
+        `<p class="prog-sub">Suas habilidades, acesas pelo treino.</p>` +
+        `<p class="prog-count"><strong>${acesas}</strong> de ${total} habilidades acesas</p>` +
+
+        `<div class="neuron-detail" id="neuronDetail">` +
+          `<span class="neuron-detail-placeholder">Toque num neurônio para ver os detalhes.</span>` +
+        `</div>` +
+
+        compHtml +
+
+        `<div class="neuron-legenda">` +
+          `<div class="leg-item"><div class="leg-dot leg-dot--forte"></div><span class="leg-label">Dominada (≥80%)</span></div>` +
+          `<div class="leg-item"><div class="leg-dot leg-dot--media"></div><span class="leg-label">Em progresso (50–79%)</span></div>` +
+          `<div class="leg-item"><div class="leg-dot leg-dot--fraca"></div><span class="leg-label">Fraca (&lt;50%)</span></div>` +
+          `<div class="leg-item"><div class="leg-dot leg-dot--vazia"></div><span class="leg-label">A treinar</span></div>` +
+        `</div>` +
+
+        `<button class="ghost" id="voltarProgBtn">← Voltar</button>` +
+
+      `</div>` +
+    `</div>`;
+
+  const detailEl  = app.querySelector('#neuronDetail');
+  let activeNeuron = null;
+
+  app.querySelector('.progresso').addEventListener('click', e => {
+    const btn = e.target.closest('.neuron');
+    if (!btn) return;
+
+    if (activeNeuron) activeNeuron.classList.remove('ativo');
+    btn.classList.add('ativo');
+    activeNeuron = btn;
+
+    const num  = parseInt(btn.dataset.hab, 10);
+    const s    = statMap.get(num);
+    const info = habInfo.get(num) ?? {};
+
+    const forcaStr = (s.forca === null || s.forca === undefined)
+      ? 'Coletando… treine mais algumas'
+      : `${Math.round(s.forca * 100)}%`;
+
+    detailEl.innerHTML =
+      `<div class="neuron-detail-content">` +
+        `<div class="nd-code">H${num}` +
+          `<span class="nd-comp-nome">${_esc(info.compNome ?? '')}</span>` +
+        `</div>` +
+        `<div class="nd-desc">${_esc(info.descricao ?? '')}</div>` +
+        `<div class="nd-stats">` +
+          `<div class="nd-stat-item">` +
+            `<span class="nd-stat-label">Força</span>` +
+            `<span class="nd-stat-val">${_esc(forcaStr)}</span>` +
+          `</div>` +
+          `<div class="nd-stat-item">` +
+            `<span class="nd-stat-label">Domínio</span>` +
+            `<span class="nd-stat-val">${Math.round(s.dominio * 100)}%</span>` +
+          `</div>` +
+          `<div class="nd-stat-item">` +
+            `<span class="nd-stat-label">Questões</span>` +
+            `<span class="nd-stat-val">${s.questoes}</span>` +
+          `</div>` +
+          `<div class="nd-stat-item">` +
+            `<span class="nd-stat-label">Revisões</span>` +
+            `<span class="nd-stat-val">${s.tentativas}</span>` +
+          `</div>` +
+        `</div>` +
+      `</div>`;
+  });
+
+  app.querySelector('#voltarProgBtn').addEventListener('click', () => renderSelecao(app));
 }
 
 // ============================================================================

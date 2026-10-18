@@ -1,6 +1,14 @@
 // ui.js — camada de apresentação.
 // A UI nunca fala direto com o IndexedDB — só via dados.js.
 
+import '@fontsource/sora/500.css';
+import '@fontsource/sora/600.css';
+import '@fontsource/sora/700.css';
+import '@fontsource/figtree/400.css';
+import '@fontsource/figtree/500.css';
+import '@fontsource/figtree/600.css';
+import '@fontsource/figtree/700.css';
+
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
 import { carregarMatriz, descreverHabilidade } from './dados.js';
 import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInicio, hojeEmDias } from './estudo.js';

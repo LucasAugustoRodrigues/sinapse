@@ -15,7 +15,9 @@ venv/
 node_modules/
 dist/
 app/dist/
-app/public/
+app/public/questoes.json
+app/public/habilidades.json
+app/public/imagens/
 .vite/
 
 # Skills externas vendorizadas (ferramenta, não o projeto)

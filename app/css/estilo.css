@@ -596,6 +596,51 @@ body {
   * { transition: none !important }
 }
 
+/* ============================================================
+   Timer de questão
+   ============================================================ */
+.timer {
+  display: flex; align-items: center; gap: 6px;
+}
+.timer-val {
+  font-family: "Sora", sans-serif; font-size: .9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted); min-width: 2.8ch;
+}
+.timer--final .timer-val {
+  color: var(--signal);
+}
+.timer--oculto .timer-val {
+  visibility: hidden;
+}
+.timer-olho {
+  appearance: none; background: transparent; border: none; cursor: pointer;
+  color: var(--muted); flex: 0 0 40px;
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, background .15s;
+}
+.timer-olho:hover, .timer-olho:focus-visible {
+  color: var(--synapse); background: rgba(139,123,245,.10);
+}
+.timer-olho:active { transform: scale(.9) }
+
+/* ============================================================
+   Fim de sessão — mini-cartões de tempo
+   ============================================================ */
+.fim-tempos {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; width: 100%; max-width: 420px;
+}
+.fim-ref {
+  font-size: .8rem; color: var(--muted); margin: 0; line-height: 1.5;
+  max-width: 360px; text-align: center;
+}
+
+@media (max-width: 420px) {
+  .fim-tempos { grid-template-columns: 1fr }
+}
+
 @media (max-width: 520px) {
   .conf button .t { font-size: .78rem }
   .brand .tag { display: none }

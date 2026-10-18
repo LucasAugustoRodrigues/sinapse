@@ -5,6 +5,53 @@ import { derivarNota, pior, BOM, ERREI } from './srs.js';
 import { carregarMatriz, descreverHabilidade } from './dados.js';
 import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInicio, hojeEmDias } from './estudo.js';
 import { saudacao, fraseDoDia } from './perfil.js';
+import { criarCronometro, formatarTempo } from './tempo.js';
+import { reflowEnunciado } from './reflow.js';
+
+// ============================================================================
+// Estado do timer (módulo — um único cronômetro ativo por vez)
+// ============================================================================
+
+let _cronAtual = null;
+let _timerIntervalo = null;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    _cronAtual?.pausar();
+  } else {
+    _cronAtual?.retomar();
+  }
+});
+
+function _pararTimerUI() {
+  clearInterval(_timerIntervalo);
+  _timerIntervalo = null;
+  _cronAtual = null;
+}
+
+function _timerVisivel() {
+  try {
+    const v = localStorage.getItem('sinapse.timerVisivel');
+    return v === null ? true : v !== 'false';
+  } catch { return true; }
+}
+
+function _salvarTimerVisivel(v) {
+  try {
+    localStorage.setItem('sinapse.timerVisivel', String(v));
+  } catch { }
+}
+
+function _atualizarTimerUI(timerEl, btn, visivel) {
+  timerEl.classList.toggle('timer--oculto', !visivel);
+  if (visivel) {
+    btn.innerHTML = SVG.olho;
+    btn.setAttribute('aria-label', 'Esconder tempo');
+  } else {
+    btn.innerHTML = SVG.olhoFechado;
+    btn.setAttribute('aria-label', 'Mostrar tempo');
+  }
+}
 
 // ============================================================================
 // Ícones SVG (substituem emoji — render idêntico em qualquer tablet)
@@ -60,6 +107,20 @@ const SVG = {
     `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
     `<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>` +
     `</svg>`,
+
+  olho:
+    `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+    `<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>` +
+    `<circle cx="12" cy="12" r="3"/>` +
+    `</svg>`,
+
+  olhoFechado:
+    `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">` +
+    `<path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68"/>` +
+    `<path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.39-1.61"/>` +
+    `<path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>` +
+    `<path d="m2 2 20 20"/>` +
+    `</svg>`,
 };
 
 // ============================================================================
@@ -75,7 +136,7 @@ function _esc(str) {
 }
 
 function _enun2html(texto) {
-  return _esc(texto).replace(/\n/g, '<br>');
+  return _esc(reflowEnunciado(texto)).replace(/\n/g, '<br>');
 }
 
 function _descHab(matriz, num) {
@@ -158,6 +219,10 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
           _LOGO_SVG +
           `<h1>Sinapse</h1>` +
           `<span class="tag">Treino</span>` +
+          `<div class="timer" id="timer">` +
+            `<span class="timer-val" id="timerVal">0:00</span>` +
+            `<button class="timer-olho" id="timerOlho" type="button"></button>` +
+          `</div>` +
           `<button class="btn-voltar" aria-label="Voltar ao início" title="Voltar ao início" id="sairBtn">${SVG.voltar}</button>` +
         `</div>` +
         `<div class="rail" id="rail">` +
@@ -209,9 +274,36 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
   const track3El   = container.querySelector('#track3');
   const stageEl    = container.querySelector('#stage');
   const segs       = [...container.querySelectorAll('#rail .seg')];
+  const timerEl    = container.querySelector('#timer');
+  const timerValEl = container.querySelector('#timerVal');
+  const timerOlhoBtn = container.querySelector('#timerOlho');
 
   // Estado local da questão (fechado na closure)
   let selHab = null, confHab = null, selAlt = null, step = 0;
+  let _tempoMs = null;
+
+  // --------------------------------------------------------------------------
+  // Timer
+  // --------------------------------------------------------------------------
+
+  _pararTimerUI();
+  const cron = criarCronometro();
+  cron.iniciar();
+  _cronAtual = cron;
+  if (document.hidden) cron.pausar();
+
+  let _timerVis = _timerVisivel();
+  _atualizarTimerUI(timerEl, timerOlhoBtn, _timerVis);
+
+  _timerIntervalo = setInterval(() => {
+    timerValEl.textContent = formatarTempo(cron.tempoMs());
+  }, 500);
+
+  timerOlhoBtn.addEventListener('click', () => {
+    _timerVis = !_timerVis;
+    _salvarTimerVisivel(_timerVis);
+    _atualizarTimerUI(timerEl, timerOlhoBtn, _timerVis);
+  });
 
   // --------------------------------------------------------------------------
   // Navegação
@@ -320,6 +412,11 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
 
   confirmBtn.addEventListener('click', () => {
     if (!selAlt) return;
+    _tempoMs = cron.parar();
+    clearInterval(_timerIntervalo);
+    _timerIntervalo = null;
+    timerValEl.textContent = formatarTempo(_tempoMs);
+    timerEl.classList.add('timer--final');
     _renderRevelacao();
     irPara(2);
   });
@@ -386,7 +483,8 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
     proxBtn.textContent = 'Próxima questão →';
     proxBtn.addEventListener('click', () => {
       proxBtn.disabled = true;
-      onConcluir?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto });
+      _pararTimerUI();
+      onConcluir?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto, tempoMs: _tempoMs });
     }, { once: true });
     container.querySelector('#panel2').appendChild(proxBtn);
     setTimeout(atualizarAltura, 30);
@@ -419,10 +517,11 @@ export function renderCard(container, { questao, matriz, habilidadeCorreta }, { 
 
   // Botão sair — passa resultado se já estiver na revelação, null antes disso
   container.querySelector('#sairBtn').addEventListener('click', () => {
+    _pararTimerUI();
     if (step < 2) { onSair?.(null); return; }
     const recAcerto = selHab === questao.habilidade;
     const resAcerto = selAlt === questao.gabarito;
-    onSair?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto });
+    onSair?.({ habilidadeMarcada: selHab, confianca: confHab, alternativaMarcada: selAlt, recAcerto, resAcerto, tempoMs: _tempoMs });
   });
 
   irPara(0);
@@ -666,13 +765,33 @@ async function iniciarRevisao(app, filtros) {
     const prox = sessao.atual();
 
     if (!prox) {
-      const { feitas, acertosReconhecimento } = sessao.resumo();
+      const { feitas, acertosReconhecimento, tempoTotalMs, tempoMedioMs, maisDemoradaMs } = sessao.resumo();
+
+      const temposHtml = tempoTotalMs > 0
+        ? `<div class="fim-tempos">` +
+            `<div class="home-pulso">` +
+              `<span class="home-pulso-val">${formatarTempo(tempoTotalMs)}</span>` +
+              `<span class="home-pulso-rot">Tempo total</span>` +
+            `</div>` +
+            `<div class="home-pulso">` +
+              `<span class="home-pulso-val">${formatarTempo(tempoMedioMs)}</span>` +
+              `<span class="home-pulso-rot">Média por questão</span>` +
+            `</div>` +
+            `<div class="home-pulso">` +
+              `<span class="home-pulso-val">${formatarTempo(maisDemoradaMs)}</span>` +
+              `<span class="home-pulso-rot">Mais demorada</span>` +
+            `</div>` +
+          `</div>` +
+          `<p class="fim-ref">Referência: no ENEM, o ritmo médio fica em torno de 3 min por questão.</p>`
+        : '';
+
       app.innerHTML =
         `<div class="sinapse-app">` +
           `<div class="fim-sessao">` +
             `<div class="fim-icone">✓</div>` +
             `<h2 class="fim-titulo">Sessão concluída</h2>` +
-            `<p class="fim-stats">${feitas} questão${feitas !== 1 ? 'ões' : ''} · ${acertosReconhecimento} de reconhecimento certo</p>` +
+            `<p class="fim-stats">${feitas} ${feitas === 1 ? 'questão' : 'questões'} · ${acertosReconhecimento} de reconhecimento certo</p>` +
+            temposHtml +
             `<button class="cta" id="voltarBtn">Voltar ao início</button>` +
           `</div>` +
         `</div>`;
@@ -683,12 +802,12 @@ async function iniciarRevisao(app, filtros) {
     const { questao } = prox;
     const habCorreta = await descreverHabilidade(questao.habilidade);
     renderCard(app, { questao, matriz, habilidadeCorreta: habCorreta }, {
-      onConcluir: async ({ recAcerto, confianca, resAcerto }) => {
-        await sessao.registrar({ recAcerto, recConfianca: confianca, resAcerto });
+      onConcluir: async ({ recAcerto, confianca, resAcerto, tempoMs }) => {
+        await sessao.registrar({ recAcerto, recConfianca: confianca, resAcerto, tempoMs });
         await mostrarAtual();
       },
       onSair: async (res) => {
-        if (res) await sessao.registrar({ recAcerto: res.recAcerto, recConfianca: res.confianca, resAcerto: res.resAcerto });
+        if (res) await sessao.registrar({ recAcerto: res.recAcerto, recConfianca: res.confianca, resAcerto: res.resAcerto, tempoMs: res.tempoMs });
         renderHome(app);
       },
     });

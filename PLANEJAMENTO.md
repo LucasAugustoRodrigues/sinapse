@@ -551,12 +551,26 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   - Cabeçalho do card opaco (texto não passa mais atrás do trilho); neurônio **fraca** em rosado
     (antes indistinguível do cinza "a treinar"); detalhe do mapa mostra "—" em vez de "30%" em
     habilidade nunca treinada. **119 testes verdes.**
+- **Timer por questão (23/09)** — cronômetro no cabeçalho do card (`tempo.js`, relógio injetável
+  e testado), com **olho pra esconder** (preferência lembrada) e **pausa quando ela sai do app**;
+  mede até "Confirmar resposta" e fica congelado em ciano na revelação. O tempo de cada revisão
+  vai pro histórico (`tempoMs`, só registro — não mexe no SRS). Fim de sessão com tempo total,
+  média e a mais demorada + referência ENEM (~3 min/questão, só no resumo). Corrigido o plural
+  "questãoões". **135 testes verdes.**
+- **Reflow do enunciado (23/09)** — o texto vinha com as quebras da coluna do PDF e ocupava só
+  metade do card. `reflow.js` junta as linhas que o PDF quebrou usando a **largura da coluna**
+  (maior linha que não é referência): linha que chega a 72% dela foi quebrada → junta; linha
+  curta é fim de parágrafo ou verso → preserva. Nunca junta diálogo ("—"), lista, referência
+  ("Disponível em", "SOBRENOME,") nem texto estreito (< 30). Calibrado nos 350 enunciados reais
+  (poemas, letras e cartazes intactos); se errar, erra pro lado seguro. **142 testes verdes.**
 
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **App PWA** — coração, mapa do cérebro e tela Início prontos; próximo: **timer por questão**,
-  depois o **PWA** em si (service worker + manifest → offline/instalável no tablet).
+- **App PWA** — coração, mapa do cérebro, tela Início, timer e reflow prontos; ícones gerados em
+  `app/public/icons/`; próximo: o **PWA** em si (fontes locais + `vite-plugin-pwa` → offline e
+  instalável). Depois: decidir a **proteção da versão dela** (Cloudflare Access × senha no app
+  com criptografia × link secreto) e fazer o deploy.
 
 ### 📋 A fazer
 
@@ -564,20 +578,20 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       "soremust", artefato do pdfplumber no Windows); (b) sinalizar as 2 alternativas
       residuais (SAS2026 Q10-E, Q39-E) e as 5 questões de texto compartilhado (SAS2026
       Q06–10, sem o texto de apoio no enunciado); marcação `confianca_extracao="revisar"`
-      + relatório do que precisa de olho humano.
-- [ ] **Timer por questão** — cronômetro no cabeçalho do card (ao lado do "TREINO"), com botão
-      pra esconder (ansiedade) e preferência lembrada; **grava sempre**, mesmo escondido. Mede do
-      card aparecer até "Confirmar resposta" (revelação fora); **pausa** quando ela sai do app.
-      Tempo salvo no histórico de cada revisão; fim de sessão com total, média e a mais demorada;
-      referência ENEM (~3 min/questão) só no resumo, nunca durante.
-- [ ] **Reflow do enunciado** — o texto mantém as quebras de linha da coluna do PDF e ocupa só
-      metade do card; juntar linhas do mesmo parágrafo (na fábrica ou na exibição).
+      + relatório do que precisa de olho humano; (c) remover as linhas **"ENEM2024AZUL"** (marca
+      d'água do PDF que escapou do filtro — ex.: SAS2024-S2-Q22, S5-Q02-EN); (d) sinalizar o
+      **texto embaralhado de cartaz/imagem** (letras soltas, 1–3 chars por linha — ex.:
+      SAS2024-S5-Q06, S2-Q27), que já aparece na imagem e só polui o enunciado.
 - [ ] **Frases do dia reais** — ir trocando/acrescentando citações em `perfil.js` (`{ texto, autor }`),
       sempre com a **fonte conferida** (muita frase da internet tem autoria falsa).
 - [ ] **PWA de verdade** — service worker + manifest → **offline e instalável no tablet dela**.
 - [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
       (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
+- [ ] **Treino livre (§5.2)** — além de idioma/simulado: treinar **uma habilidade específica** e o
+      modo **"focar nas minhas fracas"** (ordena por `forcaHabilidade` ascendente — a conta já existe).
+- [ ] **Polimento da seleção** — mostrar "N a revisar" em cada linha de simulado (adiado em 22/09).
+- [ ] **Teste no tablet dela + rodada de feedback** — depois do deploy; ajustes guiados pelo uso real.
 - [ ] **(Opcional)** mockup navegável das telas.
 
 ---

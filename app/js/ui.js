@@ -10,7 +10,7 @@ import '@fontsource/figtree/600.css';
 import '@fontsource/figtree/700.css';
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
-import { carregarMatriz, descreverHabilidade } from './dados.js';
+import { carregarMatriz, descreverHabilidade, urlImagem, desbloquear, tentarChaveSalva, pedirArmazenamentoPersistente } from './dados.js';
 import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInicio, hojeEmDias } from './estudo.js';
 import { saudacao, fraseDoDia } from './perfil.js';
 import { criarCronometro, formatarTempo } from './tempo.js';
@@ -197,9 +197,11 @@ function _buildEnunBloco(questao, isReconhecer) {
     ? ` · SAS ${anoFonte} · Simulado ${questao.simulado}`
     : '';
 
-  const imgs = (questao.imagens ?? []).map(caminho =>
-    `<div class="img-wrap"><img src="/${_esc(caminho)}" alt=""></div>`
-  ).join('');
+  const imgs = (questao.imagens ?? []).map(caminho => {
+    const url = urlImagem(caminho);
+    if (!url) return '';
+    return `<div class="img-wrap"><img src="${_esc(url)}" alt=""></div>`;
+  }).join('');
 
   const cmd = isReconhecer
     ? `<div class="cmd"><b>Qual habilidade esta questão cobra?</b></div>`
@@ -548,7 +550,7 @@ async function renderHome(app) {
     app.innerHTML =
       `<div class="loading-state">` +
         `<p>Não foi possível carregar o resumo.</p>` +
-        `<p style="font-size:.8rem;color:var(--muted2);margin-top:6px">Rode <code>npm run dev</code> para copiar os dados para public/.</p>` +
+        `<p style="font-size:.8rem;color:var(--muted2);margin-top:6px">Feche e abra o app de novo.</p>` +
       `</div>`;
     console.error('[Sinapse] renderHome error:', e);
     return;
@@ -618,6 +620,79 @@ async function renderHome(app) {
   }
   app.querySelector('#homeEscolherBtn').addEventListener('click', () => renderSelecao(app));
   app.querySelector('#homeProgressoBtn').addEventListener('click', () => renderProgresso(app));
+}
+
+// ============================================================================
+// Tela de desbloqueio (primeira abertura ou após trocar o banco)
+// ============================================================================
+
+function renderDesbloqueio(app, { onDesbloqueado }) {
+  app.innerHTML =
+    `<div class="sinapse-app"><div class="desbloqueio">` +
+      `<div class="sel-brand">` +
+        _LOGO_SVG +
+        `<h1>Sinapse</h1>` +
+      `</div>` +
+      `<h2 class="desb-titulo">Bem-vinda</h2>` +
+      `<p class="desb-texto">Digite a senha para abrir o banco de questões. Este aparelho vai lembrar dela.</p>` +
+      `<form class="desb-form" novalidate>` +
+        `<label for="senhaInput" class="desb-label">Senha</label>` +
+        `<div class="desb-campo">` +
+          `<input id="senhaInput" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go">` +
+          `<button type="button" class="desb-olho" aria-label="Mostrar senha" aria-pressed="false">${SVG.olho}</button>` +
+        `</div>` +
+        `<p class="desb-msg" role="status" aria-live="polite"></p>` +
+        `<button type="submit" class="cta">Entrar</button>` +
+      `</form>` +
+    `</div></div>`;
+
+  const form      = app.querySelector('.desb-form');
+  const input     = app.querySelector('#senhaInput');
+  const olhoBtn   = app.querySelector('.desb-olho');
+  const msgEl     = app.querySelector('.desb-msg');
+  const submitBtn = form.querySelector('[type="submit"]');
+
+  input.focus();
+
+  olhoBtn.addEventListener('click', () => {
+    const visivel = input.type === 'text';
+    input.type = visivel ? 'password' : 'text';
+    olhoBtn.innerHTML = visivel ? SVG.olho : SVG.olhoFechado;
+    olhoBtn.setAttribute('aria-label', visivel ? 'Mostrar senha' : 'Esconder senha');
+    olhoBtn.setAttribute('aria-pressed', String(!visivel));
+  });
+
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (input.value.trim() === '') {
+      msgEl.textContent = 'Digite a senha.';
+      msgEl.className = 'desb-msg';
+      return;
+    }
+    input.disabled = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Decifrando…';
+    msgEl.textContent = '';
+    msgEl.className = 'desb-msg';
+
+    try {
+      await desbloquear(input.value);
+      onDesbloqueado();
+    } catch (err) {
+      if (err.name === 'ErroSenha') {
+        msgEl.textContent = 'Senha incorreta. Confira e tente de novo.';
+        msgEl.className = 'desb-msg desb-msg--erro';
+        input.select();
+      } else {
+        console.error('[Sinapse] desbloquear error:', err);
+        msgEl.textContent = 'Não foi possível abrir o banco. Na primeira vez, o aparelho precisa estar com internet.';
+        msgEl.className = 'desb-msg desb-msg--erro';
+      }
+      input.disabled = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Entrar';
+    }
+  });
 }
 
 // ============================================================================
@@ -996,7 +1071,15 @@ const updateSW = registerSW({
 });
 
 async function _boot() {
-  await renderHome(document.getElementById('app'));
+  const app = document.getElementById('app');
+  const entrar = () => { pedirArmazenamentoPersistente(); return renderHome(app); };
+  let aberto = false;
+  try { aberto = await tentarChaveSalva(); } catch (e) { console.error('[Sinapse] chave salva:', e); }
+  if (aberto) {
+    await entrar();
+  } else {
+    renderDesbloqueio(app, { onDesbloqueado: entrar });
+  }
 }
 
 _boot().catch(err => console.error('[Sinapse] boot error:', err));

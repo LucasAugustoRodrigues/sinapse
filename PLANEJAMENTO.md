@@ -587,7 +587,9 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   houver banco em claro no `dist/`; `banco.enc` no precache (31 entradas, ~6,1 MB) (**185 verdes**) · **7c ✅ (18/10)**
   desbloqueio no `dados.js`: IndexedDB v2 com upgrade seguro (store `chave`), `desbloquear`,
   `tentarChaveSalva` (senha uma vez por aparelho; descarta a chave se o sal ou a senha mudarem),
-  `urlImagem` (blob URLs), banco decifrado só em memória (**196 verdes**) · 7d tela de senha · 7e deploy e instalação no tablet (meta ~1/11).
+  `urlImagem` (blob URLs), banco decifrado só em memória (**196 verdes**) · **7d ✅ (18/10)** tela de senha "noite neural" (olho em SVG,
+  sem autocorreção/maiúscula do teclado), portão no `_boot` (chave salva → direto na home), imagens
+  via `urlImagem`, `navigator.storage.persist()` ao entrar · 7e deploy e instalação no tablet (meta ~1/11).
 
 ### 📋 A fazer
 
@@ -607,6 +609,10 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
 - [ ] **Treino livre (§5.2)** — além de idioma/simulado: treinar **uma habilidade específica** e o
       modo **"focar nas minhas fracas"** (ordena por `forcaHabilidade` ascendente — a conta já existe).
 - [ ] **Polimento da seleção** — mostrar "N a revisar" em cada linha de simulado (adiado em 22/09).
+- [ ] **Resíduos de UI (18/10)** — trocar o emoji 🎉 de "Tudo em dia" (home) por SVG ou texto (D-13);
+      atualizar as dicas antigas "Rode `npm run dev`…" nos `catch` da `renderSelecao`/demais telas.
+- [ ] **Recorte da imagem SAS2024-S1-Q19 (18/10)** — o PNG traz um pedaço de "TEXTO I" no topo (o corte
+      pegou a linha de cima); revisar a margem do recorte em `nucleo/imagens.py` junto com o `validar.py`.
 - [ ] **Teste no tablet dela + rodada de feedback** — depois do deploy; ajustes guiados pelo uso real.
 - [ ] **(Opcional)** mockup navegável das telas.
 

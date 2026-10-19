@@ -1,5 +1,8 @@
 import { describe, test, expect } from "vitest";
-import { imagensFaltantes } from "./preparar-dados.mjs";
+import { writeFileSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { imagensFaltantes, lerNomeLocal } from "./preparar-dados.mjs";
 
 describe("imagensFaltantes", () => {
   test("nenhuma faltando → []", () => {
@@ -32,5 +35,21 @@ describe("imagensFaltantes", () => {
     ];
     const imagens = new Map();
     expect(imagensFaltantes(questoes, imagens)).toEqual(["imagens/a.png", "imagens/z.png"]);
+  });
+});
+
+describe("lerNomeLocal", () => {
+  test("caminho inexistente → ''", async () => {
+    expect(await lerNomeLocal("/caminho/que/nao/existe/perfil.local.js")).toBe('');
+  });
+
+  test("arquivo com NOME exportado → valor com trim", async () => {
+    const tmp = join(tmpdir(), `sinapse-test-perfil-${Date.now()}.mjs`);
+    writeFileSync(tmp, "export const NOME = '  Fulana ';", "utf-8");
+    try {
+      expect(await lerNomeLocal(tmp)).toBe('Fulana');
+    } finally {
+      unlinkSync(tmp);
+    }
   });
 });

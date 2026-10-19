@@ -1,8 +1,3 @@
-const locais = import.meta.glob('./perfil.local.js', { eager: true });
-const local  = Object.values(locais)[0] ?? {};
-
-export const NOME = (local.NOME ?? '').trim();
-
 export const FRASES = [
   { texto: "Cada revisão de hoje é uma conexão mais forte amanhã.", autor: null },
   { texto: "Constância vence intensidade. Um pouco todo dia.", autor: null },
@@ -12,7 +7,7 @@ export const FRASES = [
   { texto: "A medicina começa aqui: uma questão de cada vez.", autor: null },
 ];
 
-export function saudacao(hora, nome = NOME) {
+export function saudacao(hora, nome = '') {
   let periodo;
   if (hora >= 5 && hora <= 11) {
     periodo = "Bom dia";

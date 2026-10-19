@@ -382,7 +382,53 @@ describe("normalizarSenha", () => {
 });
 
 // ============================================================================
-// 15. ITERACOES_PADRAO e ida e volta com padrão
+// 15. perfil em empacotarConteudo / desempacotarConteudo
+// ============================================================================
+
+describe("perfil no pacote", () => {
+  test("perfil preservado na ida e volta", async () => {
+    const conteudo = empacotarConteudo({
+      questoes: [{ id: "P1" }],
+      imagens: new Map(),
+      perfil: { nome: "Fulana" },
+    });
+    const resultado = desempacotarConteudo(conteudo);
+    expect(resultado.perfil).toEqual({ nome: "Fulana" });
+  });
+
+  test("empacotar sem perfil → desempacotar devolve {}", () => {
+    const conteudo = empacotarConteudo({ questoes: [], imagens: new Map() });
+    const resultado = desempacotarConteudo(conteudo);
+    expect(resultado.perfil).toEqual({});
+  });
+
+  test("índice com perfil string → {}", () => {
+    const encoder = new TextEncoder();
+    const indice = { questoes: [], imagens: {}, perfil: "invalido" };
+    const indiceBytes = encoder.encode(JSON.stringify(indice));
+    const cabecalho = new Uint8Array(4);
+    new DataView(cabecalho.buffer).setUint32(0, indiceBytes.byteLength, false);
+    const bytes = new Uint8Array(cabecalho.byteLength + indiceBytes.byteLength);
+    bytes.set(cabecalho, 0);
+    bytes.set(indiceBytes, 4);
+    expect(desempacotarConteudo(bytes).perfil).toEqual({});
+  });
+
+  test("índice com perfil array → {}", () => {
+    const encoder = new TextEncoder();
+    const indice = { questoes: [], imagens: {}, perfil: ["a", "b"] };
+    const indiceBytes = encoder.encode(JSON.stringify(indice));
+    const cabecalho = new Uint8Array(4);
+    new DataView(cabecalho.buffer).setUint32(0, indiceBytes.byteLength, false);
+    const bytes = new Uint8Array(cabecalho.byteLength + indiceBytes.byteLength);
+    bytes.set(cabecalho, 0);
+    bytes.set(indiceBytes, 4);
+    expect(desempacotarConteudo(bytes).perfil).toEqual({});
+  });
+});
+
+// ============================================================================
+// 16. ITERACOES_PADRAO e ida e volta com padrão
 // ============================================================================
 
 describe("ITERACOES_PADRAO", () => {

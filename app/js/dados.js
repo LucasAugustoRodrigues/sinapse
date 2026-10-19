@@ -119,7 +119,7 @@ async function _abrir(chave, pacote) {
   if (_conteudo) {
     for (const url of _conteudo.urls.values()) URL.revokeObjectURL(url);
   }
-  _conteudo = { questoes: conteudo.questoes, urls };
+  _conteudo = { questoes: conteudo.questoes, urls, perfil: conteudo.perfil };
 }
 
 // ============================================================================
@@ -167,6 +167,10 @@ export async function tentarChaveSalva() {
 
 export function estaDesbloqueado() {
   return _conteudo !== null;
+}
+
+export function nomeDoPerfil() {
+  return String(_conteudo?.perfil?.nome ?? '').trim();
 }
 
 export function urlImagem(caminho) {

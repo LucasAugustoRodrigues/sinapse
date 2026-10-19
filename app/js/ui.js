@@ -10,7 +10,7 @@ import '@fontsource/figtree/600.css';
 import '@fontsource/figtree/700.css';
 
 import { derivarNota, pior, BOM, ERREI } from './srs.js';
-import { carregarMatriz, descreverHabilidade, urlImagem, desbloquear, tentarChaveSalva, pedirArmazenamentoPersistente } from './dados.js';
+import { carregarMatriz, descreverHabilidade, urlImagem, desbloquear, tentarChaveSalva, pedirArmazenamentoPersistente, nomeDoPerfil } from './dados.js';
 import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInicio, hojeEmDias } from './estudo.js';
 import { saudacao, fraseDoDia } from './perfil.js';
 import { criarCronometro, formatarTempo } from './tempo.js';
@@ -559,7 +559,7 @@ async function renderHome(app) {
   const { revisaoHoje, dominadas, total, streak, questoesSemana } = resumo;
   const hora  = new Date().getHours();
   const dia   = hojeEmDias();
-  const saud  = saudacao(hora);
+  const saud  = saudacao(hora, nomeDoPerfil());
   const frase = fraseDoDia(dia);
 
   const fraseHtml = frase.autor

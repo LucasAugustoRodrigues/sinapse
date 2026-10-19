@@ -139,7 +139,7 @@ export async function derivarChave(
  * @param {{ questoes: any, imagens: Map<string, Uint8Array> }} param
  * @returns {Uint8Array}
  */
-export function empacotarConteudo({ questoes, imagens }) {
+export function empacotarConteudo({ questoes, imagens, perfil }) {
   const encoder = new TextEncoder();
   const caminhos = [...imagens.keys()].sort();
 
@@ -152,7 +152,7 @@ export function empacotarConteudo({ questoes, imagens }) {
     offset += bytes.byteLength;
   }
 
-  const indice = { questoes, imagens: indiceImagens };
+  const indice = { questoes, imagens: indiceImagens, perfil: perfil ?? {} };
   const indiceBytes = encoder.encode(JSON.stringify(indice));
 
   // Cabeçalho: u32 big-endian com o tamanho do índice.
@@ -215,7 +215,13 @@ export function desempacotarConteudo(bytes) {
     imagens.set(caminho, areaImagens.slice(inicio, inicio + tamanho));
   }
 
-  return { questoes: indice.questoes, imagens };
+  const perfil = (indice.perfil !== null &&
+    typeof indice.perfil === 'object' &&
+    !Array.isArray(indice.perfil))
+    ? indice.perfil
+    : {};
+
+  return { questoes: indice.questoes, imagens, perfil };
 }
 
 // ============================================================================

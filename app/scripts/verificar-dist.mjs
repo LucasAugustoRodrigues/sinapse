@@ -4,8 +4,9 @@
  * Rodado como postbuild pelo npm.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, dirname, relative } from "node:path";
+import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { lerNomeLocal } from "./preparar-dados.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP  = join(__dirname, "..");
@@ -24,7 +25,7 @@ const EXT_TEXTO = new Set([
  *   caminho RELATIVO ao dist/ com "/" (ex.: "assets/index-abc.js", "banco.enc")
  * @returns {string[]} mensagens de problema em português (vazio = tudo certo)
  */
-export function problemasNoDist(arquivos) {
+export function problemasNoDist(arquivos, { textosProibidos = [] } = {}) {
   const problemas = [];
   const decoder = new TextDecoder("utf-8");
 
@@ -62,11 +63,17 @@ export function problemasNoDist(arquivos) {
       }
     }
 
-    // e) arquivo de texto contendo chaves do banco em claro
+    // e) arquivo de texto contendo chaves do banco em claro ou textos proibidos
     if (EXT_TEXTO.has(ext)) {
       const texto = decoder.decode(conteudo);
       if (texto.includes('"enunciado"') || texto.includes('"alternativas"')) {
         problemas.push(`banco em claro dentro de "${caminho}"`);
+      }
+      for (const tp of textosProibidos) {
+        if (tp && texto.includes(tp)) {
+          problemas.push(`perfil em claro dentro de "${caminho}"`);
+          break;
+        }
       }
     }
 
@@ -116,7 +123,8 @@ async function main() {
   const arquivos = [];
   lerDistRecursivo(DIST, "", arquivos);
 
-  const problemas = problemasNoDist(arquivos);
+  const nome = await lerNomeLocal(join(APP, "js", "perfil.local.js"));
+  const problemas = problemasNoDist(arquivos, { textosProibidos: [nome] });
 
   if (problemas.length > 0) {
     console.error("[verificar-dist] BUILD BLOQUEADO:");

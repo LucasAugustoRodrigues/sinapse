@@ -8,6 +8,7 @@ import {
   esquecerAparelho,
   pedirArmazenamentoPersistente,
   _redefinirParaTestes,
+  nomeDoPerfil,
   ErroSenha,
   lerProgresso,
 } from "./dados.js";
@@ -34,9 +35,9 @@ function imagensFixture() {
   return new Map([["imagens/a.png", IMAGEM_A]]);
 }
 
-async function pacoteCom(senha, sal) {
+async function pacoteCom(senha, sal, perfil) {
   const chave = await derivarChave(senha, sal, ITER, ["encrypt"]);
-  const conteudo = empacotarConteudo({ questoes: QUESTOES_FIXTURE, imagens: imagensFixture() });
+  const conteudo = empacotarConteudo({ questoes: QUESTOES_FIXTURE, imagens: imagensFixture(), perfil });
   return cifrarPacote(chave, conteudo, { sal, iteracoes: ITER });
 }
 
@@ -206,5 +207,28 @@ describe("desbloqueio", () => {
   // 11. pedirArmazenamentoPersistente no Node (sem navigator.storage)
   test("pedirArmazenamentoPersistente no Node retorna false", async () => {
     expect(await pedirArmazenamentoPersistente()).toBe(false);
+  });
+
+  // 12. nomeDoPerfil: antes de desbloquear → ''
+  test("nomeDoPerfil antes de desbloquear retorna ''", () => {
+    expect(nomeDoPerfil()).toBe('');
+  });
+
+  // 13. nomeDoPerfil: após desbloquear com perfil { nome: ' Fulana ' } → 'Fulana' (trim)
+  test("nomeDoPerfil após desbloquear devolve nome do perfil (trim)", async () => {
+    const sal = novoSal();
+    servir(await pacoteCom("senha", sal, { nome: " Fulana " }));
+    await desbloquear("senha");
+    expect(nomeDoPerfil()).toBe("Fulana");
+  });
+
+  // 14. nomeDoPerfil: após esquecerAparelho → ''
+  test("nomeDoPerfil some após esquecerAparelho", async () => {
+    const sal = novoSal();
+    servir(await pacoteCom("senha", sal, { nome: "Fulana" }));
+    await desbloquear("senha");
+    expect(nomeDoPerfil()).toBe("Fulana");
+    await esquecerAparelho();
+    expect(nomeDoPerfil()).toBe('');
   });
 });

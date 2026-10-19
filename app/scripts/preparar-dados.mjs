@@ -53,6 +53,23 @@ export function imagensFaltantes(questoes, imagens) {
   return [...faltantes].sort();
 }
 
+/**
+ * Lê a exportação NOME do perfil local sem expô-la em logs.
+ * Retorna '' se o arquivo não existir ou não tiver NOME.
+ *
+ * @param {string} caminho - Caminho absoluto para perfil.local.js
+ * @returns {Promise<string>}
+ */
+export async function lerNomeLocal(caminho) {
+  if (!existsSync(caminho)) return '';
+  try {
+    const mod = await import(pathToFileURL(caminho).href);
+    return String(mod.NOME ?? '').trim();
+  } catch {
+    return '';
+  }
+}
+
 async function main() {
   mkdirSync(PUBLIC, { recursive: true });
 
@@ -136,11 +153,15 @@ async function main() {
   }
 
   // h) Cifra e grava
+  const nome = await lerNomeLocal(join(APP, "js", "perfil.local.js"));
+  if (!nome) {
+    console.warn("[preparar-dados] aviso: perfil.local.js ausente ou sem NOME — saudação sem apelido.");
+  }
   const t0     = Date.now();
   const chave  = await derivarChave(senha, sal, ITERACOES_PADRAO, ["encrypt"]);
   const pacote = await cifrarPacote(
     chave,
-    empacotarConteudo({ questoes, imagens }),
+    empacotarConteudo({ questoes, imagens, perfil: { nome } }),
     { sal, iteracoes: ITERACOES_PADRAO }
   );
   writeFileSync(join(PUBLIC, "banco.enc"), pacote);

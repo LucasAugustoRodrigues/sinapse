@@ -24,6 +24,10 @@ describe("saudacao — com nome / sem nome", () => {
   test("sem nome retorna saudação genérica", () => {
     expect(saudacao(20, '')).toBe("Boa noite!");
   });
+
+  test("sem segundo argumento retorna saudação genérica", () => {
+    expect(saudacao(20)).toBe("Boa noite!");
+  });
 });
 
 describe("fraseDoDia", () => {

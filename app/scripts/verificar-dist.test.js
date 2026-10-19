@@ -171,3 +171,28 @@ describe("regra f: sw.js e precache", () => {
     expect(p.some(m => m.includes("banco.enc fora do precache"))).toBe(true);
   });
 });
+
+// ============================================================================
+// Textos proibidos (perfil em claro)
+// ============================================================================
+
+describe("textosProibidos: perfil em claro", () => {
+  test("JS contendo texto proibido dispara 'perfil em claro' (mensagem não revela o texto)", () => {
+    const arquivos = [
+      ...distBom(),
+      { caminho: "assets/vazamento.js", conteudo: enc.encode('const x = "Fulana"') },
+    ];
+    const p = problemasNoDist(arquivos, { textosProibidos: ["Fulana"] });
+    expect(p.filter(m => m.startsWith("perfil em claro"))).toHaveLength(1);
+    expect(p.every(m => !m.includes("Fulana"))).toBe(true);
+  });
+
+  test("textosProibidos com string vazia não acusa nada (dist bom)", () => {
+    const p = problemasNoDist(distBom(), { textosProibidos: [""] });
+    expect(p).toEqual([]);
+  });
+
+  test("sem segundo argumento continua funcionando (backward compat)", () => {
+    expect(problemasNoDist(distBom())).toEqual([]);
+  });
+});

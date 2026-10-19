@@ -584,8 +584,10 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   testes de ida e volta (**165 verdes**) · **7b1 ✅ (18/10)** `preparar-dados.mjs` gera o
   `banco.enc` (5,8 MB), apaga o banco em claro do `public/` e normaliza a senha contra o teclado do
   tablet (**172 verdes**) · **7b2 ✅ (18/10)** `verificar-dist.mjs` no `postbuild` bloqueia o build se
-  houver banco em claro no `dist/`; `banco.enc` no precache (31 entradas, ~6,1 MB) (**185 verdes**) · 7c desbloqueio
-  no `dados.js` · 7d tela de senha · 7e deploy e instalação no tablet (meta ~1/11).
+  houver banco em claro no `dist/`; `banco.enc` no precache (31 entradas, ~6,1 MB) (**185 verdes**) · **7c ✅ (18/10)**
+  desbloqueio no `dados.js`: IndexedDB v2 com upgrade seguro (store `chave`), `desbloquear`,
+  `tentarChaveSalva` (senha uma vez por aparelho; descarta a chave se o sal ou a senha mudarem),
+  `urlImagem` (blob URLs), banco decifrado só em memória (**196 verdes**) · 7d tela de senha · 7e deploy e instalação no tablet (meta ~1/11).
 
 ### 📋 A fazer
 

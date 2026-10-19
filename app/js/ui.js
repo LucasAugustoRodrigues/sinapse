@@ -15,6 +15,7 @@ import { iniciarSessao, listarSimulados, contarRevisao, mapaCerebro, resumoInici
 import { saudacao, fraseDoDia } from './perfil.js';
 import { criarCronometro, formatarTempo } from './tempo.js';
 import { reflowEnunciado } from './reflow.js';
+import { registerSW } from 'virtual:pwa-register';
 
 // ============================================================================
 // Estado do timer (módulo — um único cronômetro ativo por vez)
@@ -960,6 +961,39 @@ async function renderProgresso(app) {
 // ============================================================================
 // Boot — roteador de telas
 // ============================================================================
+
+function _mostrarAviso(texto, rotuloBotao, acao) {
+  document.querySelector('.aviso-pwa')?.remove();
+
+  const el = document.createElement('div');
+  el.className = 'aviso-pwa';
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+
+  const span = document.createElement('span');
+  span.textContent = texto;
+  el.appendChild(span);
+
+  if (rotuloBotao) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = rotuloBotao;
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      acao();
+    });
+    el.appendChild(btn);
+  } else {
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  document.body.appendChild(el);
+}
+
+const updateSW = registerSW({
+  onNeedRefresh() { _mostrarAviso('Nova versão disponível', 'Atualizar', () => updateSW(true)); },
+  onOfflineReady() { _mostrarAviso('Pronto para estudar offline', null, null); },
+});
 
 async function _boot() {
   await renderHome(document.getElementById('app'));

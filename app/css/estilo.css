@@ -731,3 +731,46 @@ body {
 @media (max-width: 420px) {
   .home-pulsos { grid-template-columns: 1fr }
 }
+
+/* ── Aviso PWA (nova versão / offline pronto) ─────────────────────────────── */
+
+.aviso-pwa {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 50;
+  width: max-content;
+  max-width: min(92vw, 520px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px 12px 18px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-family: "Figtree", sans-serif;
+  font-size: .95rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .45);
+}
+
+.aviso-pwa button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--synapse), #6d5ce8);
+  color: #fff;
+  font-family: "Sora", sans-serif;
+  font-weight: 600;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+
+.aviso-pwa button:disabled {
+  opacity: .6;
+  cursor: default;
+}

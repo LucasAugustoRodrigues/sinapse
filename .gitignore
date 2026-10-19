@@ -18,6 +18,8 @@ app/dist/
 app/public/questoes.json
 app/public/habilidades.json
 app/public/imagens/
+app/public/banco.enc
+app/.sal-banco
 .vite/
 
 # Skills externas vendorizadas (ferramenta, não o projeto)

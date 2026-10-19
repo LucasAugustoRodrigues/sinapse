@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "node scripts/copiar-dados.mjs",
+    "predev": "node scripts/preparar-dados.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/copiar-dados.mjs",
+    "prebuild": "node scripts/preparar-dados.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run"

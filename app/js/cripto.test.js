@@ -13,6 +13,7 @@ import {
   cifrarPacote,
   lerCabecalho,
   decifrarPacote,
+  normalizarSenha,
 } from "./cripto.js";
 
 // ============================================================================
@@ -350,6 +351,33 @@ describe("_paraHex e _deHex", () => {
 
   test("_deHex com string vazia → Uint8Array vazio", () => {
     expect(_deHex("")).toEqual(new Uint8Array(0));
+  });
+});
+
+// ============================================================================
+// 15. normalizarSenha
+// ============================================================================
+
+describe("normalizarSenha", () => {
+  test("espaços, maiúsculas e múltiplos espaços internos são normalizados", () => {
+    expect(normalizarSenha("  Jabuti   Lanterna ")).toBe("jabuti lanterna");
+  });
+
+  test("senha com maiúsculas e espaços: cifra e decifra com versões diferentes abrem o mesmo pacote", async () => {
+    const sal = novoSal();
+    const chaveEnc = await derivarChave("Jabuti Lanterna ", sal, ITER, ["encrypt"]);
+    const chaveDec = await derivarChave("jabuti lanterna", sal, ITER, ["decrypt"]);
+
+    const conteudo = empacotarConteudo({ questoes: [{ id: "NORM" }], imagens: new Map() });
+    const pacote = await cifrarPacote(chaveEnc, conteudo, { sal, iteracoes: ITER });
+    const claro = await decifrarPacote(chaveDec, pacote);
+    const resultado = desempacotarConteudo(claro);
+
+    expect(resultado.questoes).toEqual([{ id: "NORM" }]);
+  });
+
+  test("senha de só espaços → TypeError", async () => {
+    await expect(derivarChave("   ", novoSal(), ITER)).rejects.toBeInstanceOf(TypeError);
   });
 });
 

@@ -31,6 +31,15 @@ export class ErroPacote extends Error {
 }
 
 // ============================================================================
+// Normalização de senha
+// ============================================================================
+
+/** NFC → minúsculas → sem espaços nas pontas → espaços internos repetidos viram um só. */
+export function normalizarSenha(senha) {
+  return senha.normalize('NFC').toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+// ============================================================================
 // Utilitários de codificação
 // ============================================================================
 
@@ -72,7 +81,7 @@ export function novoSal() {
  * Deriva uma chave AES-GCM-256 a partir de senha e sal usando PBKDF2-SHA-256.
  * A chave retornada é não-extraível.
  *
- * @param {string} senha - Senha em texto simples (normalizada para NFC internamente).
+ * @param {string} senha - Senha em texto simples. Normalizada automaticamente (NFC, minúsculas, espaços colapsados).
  * @param {Uint8Array} sal - Sal com no mínimo 16 bytes.
  * @param {number} iteracoes - Número de iterações PBKDF2 (>= 1).
  * @param {string[]} usos - Usos da chave, ex.: ['encrypt'], ['decrypt'], ['encrypt','decrypt'].
@@ -85,7 +94,11 @@ export async function derivarChave(
   iteracoes = ITERACOES_PADRAO,
   usos = ['decrypt']
 ) {
-  if (typeof senha !== 'string' || senha.length === 0) {
+  if (typeof senha !== 'string') {
+    throw new TypeError('senha deve ser uma string não vazia.');
+  }
+  const senhaNormalizada = normalizarSenha(senha);
+  if (senhaNormalizada === '') {
     throw new TypeError('senha deve ser uma string não vazia.');
   }
   if (!(sal instanceof Uint8Array) || sal.byteLength < 16) {
@@ -96,8 +109,7 @@ export async function derivarChave(
   }
 
   const encoder = new TextEncoder();
-  const senhaNFC = senha.normalize('NFC');
-  const senhaBytes = encoder.encode(senhaNFC);
+  const senhaBytes = encoder.encode(senhaNormalizada);
 
   const chaveBase = await globalThis.crypto.subtle.importKey(
     'raw',

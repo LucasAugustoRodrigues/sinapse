@@ -576,9 +576,13 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **Deploy da versão dela** — o app já é PWA offline e instalável; falta decidir a **proteção**
-  (Cloudflare Access × senha no app com criptografia × link secreto), publicar em HTTPS e
-  instalar no tablet dela antes de **8/11**.
+- **Fase 7 — senha no app + deploy da versão dela** — proteção decidida (D-17, opção B) e
+  desenho fechado em 18/10 (D-18): banco **e** imagens num pacote só (`banco.enc`), PBKDF2-SHA256
+  600 mil iterações (OWASP) → AES-GCM 256 com o cabeçalho autenticado, sal estável num arquivo
+  local fora do git, senha normalizada em NFC, cifrado também no `dev`, progresso sem cifra,
+  deploy no Cloudflare Pages (Direct Upload). Fatias: **7a ✅ (18/10)** `cripto.js` puro + 23
+  testes de ida e volta (**165 verdes**) · 7b script de build + `verificar-dist` · 7c desbloqueio
+  no `dados.js` · 7d tela de senha · 7e deploy e instalação no tablet (meta ~1/11).
 
 ### 📋 A fazer
 

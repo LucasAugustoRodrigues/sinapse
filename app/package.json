@@ -8,6 +8,7 @@
     "dev": "vite",
     "prebuild": "node scripts/preparar-dados.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/verificar-dist.mjs",
     "preview": "vite preview",
     "test": "vitest run"
   },

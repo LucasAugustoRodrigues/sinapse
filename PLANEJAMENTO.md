@@ -581,7 +581,10 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   600 mil iterações (OWASP) → AES-GCM 256 com o cabeçalho autenticado, sal estável num arquivo
   local fora do git, senha normalizada em NFC, cifrado também no `dev`, progresso sem cifra,
   deploy no Cloudflare Pages (Direct Upload). Fatias: **7a ✅ (18/10)** `cripto.js` puro + 23
-  testes de ida e volta (**165 verdes**) · 7b script de build + `verificar-dist` · 7c desbloqueio
+  testes de ida e volta (**165 verdes**) · **7b1 ✅ (18/10)** `preparar-dados.mjs` gera o
+  `banco.enc` (5,8 MB), apaga o banco em claro do `public/` e normaliza a senha contra o teclado do
+  tablet (**172 verdes**) · **7b2 ✅ (18/10)** `verificar-dist.mjs` no `postbuild` bloqueia o build se
+  houver banco em claro no `dist/`; `banco.enc` no precache (31 entradas, ~6,1 MB) (**185 verdes**) · 7c desbloqueio
   no `dados.js` · 7d tela de senha · 7e deploy e instalação no tablet (meta ~1/11).
 
 ### 📋 A fazer

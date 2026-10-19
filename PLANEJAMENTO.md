@@ -589,7 +589,7 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   `tentarChaveSalva` (senha uma vez por aparelho; descarta a chave se o sal ou a senha mudarem),
   `urlImagem` (blob URLs), banco decifrado só em memória (**196 verdes**) · **7d ✅ (18/10)** tela de senha "noite neural" (olho em SVG,
   sem autocorreção/maiúscula do teclado), portão no `_boot` (chave salva → direto na home), imagens
-  via `urlImagem`, `navigator.storage.persist()` ao entrar · 7e deploy e instalação no tablet (meta ~1/11).
+  via `urlImagem`, `navigator.storage.persist()` ao entrar · **7e (PC ✅ 18/10)** deploy no Cloudflare Pages (`sinapse-estudo.pages.dev`, Direct Upload com o Wrangler 4 via `npx`, sem dependência nova): senha, F5, modo Offline e "Atualizar" testados no PC; **falta instalar no tablet** (meta ~1/11) · **7f ✅ (18/10)** apelido viaja **cifrado** dentro do `banco.enc` e saiu do JavaScript publicado; o `verificar-dist` bloqueia o build se ele aparecer em claro (**209 verdes**).
 
 ### 📋 A fazer
 
@@ -605,7 +605,7 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       sempre com a **fonte conferida** (muita frase da internet tem autoria falsa).
 - [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
       (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
-- [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
+- [ ] **Deploy público** — portfólio (código + mini-dataset). O privado, com o dataset real, é a fatia 7e.
 - [ ] **Treino livre (§5.2)** — além de idioma/simulado: treinar **uma habilidade específica** e o
       modo **"focar nas minhas fracas"** (ordena por `forcaHabilidade` ascendente — a conta já existe).
 - [ ] **Polimento da seleção** — mostrar "N a revisar" em cada linha de simulado (adiado em 22/09).

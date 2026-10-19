@@ -21,6 +21,7 @@ app/public/imagens/
 app/public/banco.enc
 app/.sal-banco
 .vite/
+.wrangler/
 
 # Skills externas vendorizadas (ferramenta, não o projeto)
 .agents/

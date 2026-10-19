@@ -8,7 +8,7 @@
 > desenvolvimento e o que falta), atualizado a cada tarefa fechada, e a **matriz completa
 > das 30 habilidades** no Apêndice (§9).
 >
-> Última atualização: 2026-08-31
+> Última atualização: 2026-10-18
 
 ---
 
@@ -563,14 +563,22 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
   curta é fim de parágrafo ou verso → preserva. Nunca junta diálogo ("—"), lista, referência
   ("Disponível em", "SOBRENOME,") nem texto estreito (< 30). Calibrado nos 350 enunciados reais
   (poemas, letras e cartazes intactos); se errar, erra pro lado seguro. **142 testes verdes.**
+- **PWA instalável e offline (18/10)** — (6a) fontes Sora + Figtree **locais** via `@fontsource`
+  (fim do Google Fonts), favicon + apple-touch-icon no `index.html`, e o `.gitignore` passou a
+  ignorar **só os dados** (`questoes.json`, `habilidades.json`, `imagens/`), então os ícones
+  entraram no git. (6b) `vite-plugin-pwa` 2.0 (Workbox, `generateSW`): manifest com `id`, ícones
+  e maskable; **precache de tudo na instalação** (109 arquivos, ~6,4 MB: banco, 75 imagens,
+  fontes); esqueletos antigos (`manifest.webmanifest`, `service-worker.js`) removidos. Aviso no
+  rodapé ("Pronto para estudar offline" some em 4 s; "Nova versão disponível" fica até ela tocar
+  em **Atualizar** — nunca recarrega sozinho, pra não perder questão em andamento). Testado no
+  `preview`: service worker ativo e questão com imagem abrindo **em modo Offline**. **142 testes verdes.**
 
 ### 🔨 Em andamento
 
 - **Documento vivo + quadro de andamento** — este arquivo, mantido a cada fechamento.
-- **App PWA** — coração, mapa do cérebro, tela Início, timer e reflow prontos; ícones gerados em
-  `app/public/icons/`; próximo: o **PWA** em si (fontes locais + `vite-plugin-pwa` → offline e
-  instalável). Depois: decidir a **proteção da versão dela** (Cloudflare Access × senha no app
-  com criptografia × link secreto) e fazer o deploy.
+- **Deploy da versão dela** — o app já é PWA offline e instalável; falta decidir a **proteção**
+  (Cloudflare Access × senha no app com criptografia × link secreto), publicar em HTTPS e
+  instalar no tablet dela antes de **8/11**.
 
 ### 📋 A fazer
 
@@ -584,7 +592,6 @@ clamp do ease nos extremos; teto de intervalo; ordenação da fila.
       SAS2024-S5-Q06, S2-Q27), que já aparece na imagem e só polui o enunciado.
 - [ ] **Frases do dia reais** — ir trocando/acrescentando citações em `perfil.js` (`{ texto, autor }`),
       sempre com a **fonte conferida** (muita frase da internet tem autoria falsa).
-- [ ] **PWA de verdade** — service worker + manifest → **offline e instalável no tablet dela**.
 - [ ] **Modo "simulado em ordem" (Q1→Q45)** — decidido em 22/09 **adiar**: primeiro o coração
       (revisão espaçada do dia); depois um modo linear pra ela fazer um simulado inteiro em ordem.
 - [ ] **Deploy** — público (portfólio, código + mini-dataset) e privado (dataset real, pra ela).
